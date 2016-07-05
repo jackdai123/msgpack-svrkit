@@ -1,0 +1,17 @@
+{
+	"app": "echo",
+
+	"self_server": {
+		"dispatch_type": "custom",
+		"worker_type": "process_coroutine",
+		"groups" : [{
+			"group_name": "event",
+			"worker_sum": 2,
+			"coroutine_sum": 100
+		},{
+			"group_name": "value",
+			"worker_sum": 2,
+			"coroutine_sum": 100
+		}]
+	}
+}

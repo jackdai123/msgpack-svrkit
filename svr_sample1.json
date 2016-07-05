@@ -1,0 +1,36 @@
+{
+	"app": "echo",
+
+	"protos": [{
+		"name": "echomsg",
+		"fields": [{
+			"name": "value",
+			"type": "string"
+		}]
+	}],
+
+	"rpc_client": {
+		"mode": "sharding"
+	},
+
+	"rpc_server": {
+		"ip": "0.0.0.0",
+		"port": 3000,
+		"worker_type": "thread",
+		"worker_sum": 4,
+		"apis": [{
+			"name": "echo",
+			"args": [{
+				"name": "msg",
+				"type": "echomsg"
+			}],
+			"ret": true
+		}]
+	},
+
+	"self_server": {
+		"dispatch_type": "simple",
+		"worker_type": "thread",
+		"worker_sum": 4
+	}
+}

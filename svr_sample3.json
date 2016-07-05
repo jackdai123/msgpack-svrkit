@@ -1,0 +1,10 @@
+{
+	"app": "echo",
+
+	"self_server": {
+		"dispatch_type": "simple",
+		"worker_type": "process_coroutine",
+		"worker_sum": 2,
+		"coroutine_sum": 100
+	}
+}
