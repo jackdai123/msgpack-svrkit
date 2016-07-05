@@ -247,8 +247,11 @@ testtest
 ```
 - ./echo stop
 
-
-
+#依赖库
+- msgpackrpc
+- daemonize
+- gevent
+- consistent_hash
 
 
 
