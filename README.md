@@ -1,6 +1,3 @@
-[TOC]
-
--------------------
 #pysvrkit简介
 **pysvrkit**是一个用来生成python服务框架（skeleton）的工具，主要为了提升后台python工程师的开发效率，特点如下：
 - **基于msgpack的rpc** ：[msgpack](http://msgpack.org/)是一个快速精巧的二进制打包协议，支持超过50种开发语言，基于msgpack可以容易的跨语言开发；
@@ -255,6 +252,7 @@ testtest
 
 
 
+-------------------
 
 # 反馈与建议
 - 微信：david_jlu
