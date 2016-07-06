@@ -155,7 +155,7 @@
 ```
 - ../pysvrkit/gen_svr.py -f svr.json -d .
 - ls -l
-```
+```bash
 -rwxrwxr--. 1 vagrant vagrant  890 Jul  5 09:43 echo
 -rw-rw-r--. 1 vagrant vagrant  165 Jul  5 09:43 echo_cli.conf
 -rw-rw-r--. 1 vagrant vagrant 4186 Jul  5 09:43 echo_cli.py
@@ -170,7 +170,7 @@
 -rw-rw-r--. 1 vagrant vagrant  633 Jul  5 08:33 svr.json
 ```
 - cat echo_svr.conf
-```
+```ini
 [app]
 name=echo
 pid=/tmp/echo.pid
@@ -199,7 +199,7 @@ coroutine_sum=3
 ```
 - ./echo start
 - ps -ef | grep echo_svr
-```
+```bash
 vagrant  22236     1  1 09:48 ?        00:00:00 python /home/vagrant/echo/echo_svr.py -f /home/vagrant/echo/echo_svr.conf -d
 vagrant  22243 22236  1 09:48 ?        00:00:00 python /home/vagrant/echo/echo_svr.py -f /home/vagrant/echo/echo_svr.conf -d
 vagrant  22245 22243  0 09:48 ?        00:00:00 python /home/vagrant/echo/echo_svr.py -f /home/vagrant/echo/echo_svr.conf -d
@@ -208,7 +208,7 @@ vagrant  22247 22243  0 09:48 ?        00:00:00 python /home/vagrant/echo/echo_s
 vagrant  22248 22243  0 09:48 ?        00:00:00 python /home/vagrant/echo/echo_svr.py -f /home/vagrant/echo/echo_svr.conf -d
 ```
 - cat echo_cli.conf
-```
+```ini
 [server]
 sum=3
 mode=hashring
@@ -229,12 +229,12 @@ port=3000
 weight=100
 ```
 - cat echo_rpc_handler.py
-```
+```python
 def echo(msg,):
         return msg.value
 ```
 - cat echo_test.py
-```
+```python
 def test_echo():
         cli = echo_cli.Client('echo_cli.conf')
         msg = echo_proto.echomsg()
@@ -248,10 +248,10 @@ testtest
 - ./echo stop
 
 #依赖库
-- msgpackrpc
-- daemonize
-- gevent
-- consistent_hash
+- [msgpackrpc](https://github.com/msgpack-rpc/msgpack-rpc-python)
+- [daemonize](https://github.com/thesharp/daemonize)
+- [gevent](https://github.com/gevent/gevent)
+- [consistent_hash](https://github.com/yummybian/consistent-hash)
 
 
 
