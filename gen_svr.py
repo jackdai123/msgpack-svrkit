@@ -24,7 +24,7 @@ def print_usage(argv):
 
 def parse_opts(argv):
 	global jsonfile, codepath, toolpath
-	toolpath = os.path.dirname(os.path.abspath(argv[0]))
+	toolpath = os.path.dirname(os.path.abspath(argv[0])) + '/tpl'
 	try:
 		opts, args = getopt.getopt(argv[1:], "d:f:h")
 	except getopt.GetoptError:
