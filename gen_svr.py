@@ -79,10 +79,12 @@ def gen_svrconf_file():
 			content += '[self_server]\ndispatch_type=custom\nworker_type=%s\ngroup_sum=%d\n\n' \
 					% (jsondata['self_server']['worker_type'], len(jsondata['self_server']['groups']))
 			for i in xrange(len(jsondata['self_server']['groups'])):
-				content += '[self_group%d]\ngroup_name=%s\nworker_sum=%d\ncoroutine_sum=%d\n\n' % \
+				content += '[self_group%d]\ngroup_name=%s\nworker_sum=%d\n' % \
 						(i, jsondata['self_server']['groups'][i]['group_name'],
-								jsondata['self_server']['groups'][i]['worker_sum'],
-								jsondata['self_server']['groups'][i]['coroutine_sum'])
+								jsondata['self_server']['groups'][i]['worker_sum'])
+				if jsondata['self_server']['worker_type'] == 'process_coroutine':
+					content += 'coroutine_sum=%d\n' % (jsondata['self_server']['groups'][i]['coroutine_sum'])
+				content += '\n'
 		else:
 			raise TypeError('type of self dispatch_type isnot correct!')
 	try:
@@ -138,8 +140,12 @@ def gen_comm_svr_head():
 	try:
 		fp = open(os.path.join(toolpath, 'comm_svr_head.tpl'), 'r')
 		content = fp.read()
-		content = content.replace('${app}', jsondata['app'])
 		fp.close()
+		content = content.replace('${app}', jsondata['app'])
+		if 'self_server' in jsondata and jsondata['self_server']['worker_type'].find('coroutine') != -1:
+			content = content.replace('${monkey}', '\nfrom gevent import monkey\nmonkey.patch_all(sys=True, Event=True)\n')
+		else:
+			content = content.replace('${monkey}', '')
 	except Exception,e:
 		print traceback.format_exc()
 		sys.exit()
@@ -163,8 +169,6 @@ def gen_self_svr_head():
 	global toolpath, jsondata
 	content = ''
 	if 'self_server' in jsondata:
-		if jsondata['self_server']['worker_type'] == 'process_coroutine':
-			content += 'from gevent import monkey\nmonkey.patch_all(sys=True, Event=True)\n'
 		content += 'import %s_self_handler\n\n' % (jsondata['app'])
 	return content
 

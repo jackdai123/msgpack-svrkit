@@ -36,6 +36,10 @@
 			self_worker = multiprocessing.dummy.DummyProcess(
 					target = ${app}_self_handler.process,
 					args = (self_group_name, worker_id, args,))
+		elif self_worker_type == 'coroutine':
+			self_worker = gevent.spawn(
+					${app}_self_handler.process,
+					self_group_name, worker_id, args)
 		return self_worker
 
 	def start_self_simple_server(self, self_worker_type):
@@ -55,7 +59,12 @@
 		while 1:
 			for worker_id in self_worker_map:
 				self_worker_map[worker_id].join(1)
-				if not self_worker_map[worker_id].is_alive():
+				isdead = False
+				if hasattr(self_worker_map[worker_id], 'is_alive'):
+					isdead = not self_worker_map[worker_id].is_alive()
+				else:
+					isdead = self_worker_map[worker_id].dead
+				if isdead:
 					self_worker_map[worker_id] = self.create_self_worker(self_worker_type, 'simple', worker_id, args)
 					self_worker_map[worker_id].start()
 
@@ -84,7 +93,12 @@
 		while 1:
 			for key in self_worker_map:
 				self_worker_map[key].join(1)
-				if not self_worker_map[key].is_alive():
+				isdead = False
+				if hasattr(self_worker_map[key], 'is_alive'):
+					isdead = not self_worker_map[key].is_alive()
+				else:
+					isdead = self_worker_map[key].dead
+				if isdead:
 					key_arr = key.split('_')
 					self_worker_map[key] = self.create_self_worker(self_worker_type, key_arr[0], key_arr[1], args)
 					self_worker_map[key].start()
@@ -122,6 +136,10 @@
 			self_server_manager = multiprocessing.dummy.DummyProcess(
 					target = self.start_self_server,
 					args = (self_worker_type,))
+		elif self_worker_type == 'coroutine':
+			self_server_manager = gevent.spawn(
+					self.start_self_server,
+					self_worker_type)
 		else:
 			raise TypeError('type of self worker_type isnot correct!')
 		return self_server_manager

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-
+${monkey}
 import os
 import sys
 import getopt
