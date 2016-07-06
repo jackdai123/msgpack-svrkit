@@ -75,7 +75,9 @@ class Client(object):
 	def _set_hashring_client(self):
 		self.clientkey = self._randomstr()
 		self.con_server = self.con_hash.get_node(self.clientkey)
-		self.client = msgpackrpc.Client(self.addrs[self.con_server])
+		self.client = msgpackrpc.Client(
+				address = self.addrs[self.con_server],
+				timeout = 3)
 
 	def _set_sharding_client(self):
 		segnum = self.clientkey % self.shardsum
@@ -84,7 +86,9 @@ class Client(object):
 					segnum <= self.shardsec[server][1]:
 				self.con_server = server
 				break
-		self.client = msgpackrpc.Client(self.addrs[self.con_server])
+		self.client = msgpackrpc.Client(
+				address = self.addrs[self.con_server],
+				timeout = 3)
 		self.isMasterLive = True
 
 	def _randomstr(self, randomlength=8):
@@ -117,12 +121,16 @@ class Client(object):
 
 	def _sharding_failover(self):
 		if self.isMasterLive:
-			self.client = msgpackrpc.Client(self.bakaddrs[self.con_server])
+			self.client = msgpackrpc.Client(
+					address = self.bakaddrs[self.con_server],
+					timeout = 3)
 			self.isMasterLive = False
 		else:
 			arr = self.con_server.split(':')
 			if self._isopen(arr[0], int(arr[1])):
-				self.client = msgpackrpc.Client(self.addrs[self.con_server])
+				self.client = msgpackrpc.Client(
+						address = self.addrs[self.con_server],
+						timeout = 3)
 				self.isMasterLive = True
 			else:
 				return False

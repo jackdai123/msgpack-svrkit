@@ -441,7 +441,7 @@ def gen_rpc_cli_code():
 				content += ', %s' % (arg['name'])
 			content += ')\n\t\t\t\treturn future.get()\n'
 		else:
-			content += '\t\t\t\tself.client.notify(\'%s\'' % (api['name'])
+			content += '\t\t\t\treturn self.client.notify(\'%s\'' % (api['name'])
 			for arg in api['args']:
 				content += ', %s' % (arg['name'])
 			content += ')\n'

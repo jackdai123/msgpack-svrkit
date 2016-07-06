@@ -8,10 +8,10 @@
 #IDL描述文件
 **IDL描述文件**是一个json文件，主要包括rpc协议、客户端分布、rpc服务描述、普通服务描述四部分：
 - **rpc协议**：定义rpc协议数据结构，对应描述文件中的protos字段，如下json片段定义了只包含一个字符串字段名叫echomsg结构，其中字段类型支持string、bool、int、float、list、tuple、dict
-	- name：定义数据结构的名称
-	- fields：定义数据结构包含的字段
-	- fields.name：定义一个字段的名称
-	- fields.type：定义一个字段的数据类型
+        - name：定义数据结构的名称
+        - fields：定义数据结构包含的字段
+        - fields.name：定义一个字段的名称
+        - fields.type：定义一个字段的数据类型
 ```json
         "protos": [{
                 "name": "echomsg",
@@ -22,24 +22,24 @@
         }]
 ```
 - **客户端分布**：pysvrkit由客户端来决定路由，即请求发送到哪台服务器，对应描述文件中的rpc_client.mode字段，目前只支持sharding和hashring两种模式，如下json片段使用hashring
-	- hashring：即[一致性哈希](http://blog.csdn.net/cywosp/article/details/23397179/)分布方式，适合无状态服务
-	- sharding：根据客户端ID分片，适合有状态的比如存储服务
+        - hashring：即[一致性哈希](http://blog.csdn.net/cywosp/article/details/23397179/)分布方式，适合无状态服务
+        - sharding：根据客户端ID分片，适合有状态的比如存储服务
 ```json
     "rpc_client": {
                 "mode": "hashring"
     }
 ```
 - **rpc服务描述**：定义rpc服务，对应描述文件中的rpc_server字段，如下json片段定义一个echo服务，只有一个echo接口
-	- ip：定义rpc服务监听的ip
-	- port：定义rpc服务监听的端口
-	- worker_type：只支持process和thread两种
-	- worker_sum：定义rpc工作者的数量
-	- apis：定义服务提供的接口
-	- apis.name：定义接口的名称
-	- apis.args：定义接口参数
-	- apis.args.name：定义接口参数的名称
-	- apis.args.type：定义接口参数的数据类型
-	- apis.ret：定义是否有返回值
+        - ip：定义rpc服务监听的ip
+        - port：定义rpc服务监听的端口
+        - worker_type：只支持process和thread两种
+        - worker_sum：定义rpc工作者的数量
+        - apis：定义服务提供的接口
+        - apis.name：定义接口的名称
+        - apis.args：定义接口参数
+        - apis.args.name：定义接口参数的名称
+        - apis.args.type：定义接口参数的数据类型
+        - apis.ret：定义是否有返回值
 ```json
     "rpc_server": {
                 "ip": "0.0.0.0",
@@ -57,8 +57,8 @@
     }
 ```
 - **普通服务描述**：定义普通服务，即不接受rpc请求的后台服务，对应描述文件中的self_server字段，如下json片段是一些常见的例子
-	- dispatch_type：只支持simple和custom两种simple会生成worker_sum个工作者，做同样的任务；custom会生成若干个工作组，工作组之间做不同的任务
-	- worker_type：只支持process、thread和process_coroutine三种，其中process_coroutine会生成worker_sum个进程、每个进程coroutine_sum个协程
+        - dispatch_type：只支持simple和custom两种simple会生成worker_sum个工作者，做同样的任务；custom会生成若干个工作组，工作组之间做不同的任务
+        - worker_type：只支持process、thread和process_coroutine三种，其中process_coroutine会生成worker_sum个进程、每个进程coroutine_sum个协程
 ```json
     "self_server": {
                 "dispatch_type": "simple",
@@ -247,6 +247,28 @@ testtest
 ```
 - ./echo stop
 
+#rpc性能测试
+- **测试环境**：虚拟机单核512M内存，Intel(R) Core(TM) i3-4130 CPU @ 3.40GHz，客户端和服务端部署在同一台机器，运行100w次echo请求
+```python
+def test_echo():
+        cli = echo_cli.Client('echo_cli.conf', 0)
+        msg = echo_proto.echomsg()
+        for i in xrange(1000000):
+                cli.echo(msg,)
+```
+- **有返回结果的测试**：IDL描述文件中rpc_server.apis.ret设置为false，qps为3000/s
+```
+real    5m36.347s
+user    2m27.468s
+sys     0m15.990s
+```
+- **无返回结果的测试**：IDL描述文件中rpc_server.apis.ret设置为true，qps为1.4w/s
+```
+real    1m12.819s
+user    0m42.881s
+sys     0m1.417s
+```
+
 #依赖库
 - [msgpackrpc](https://github.com/msgpack-rpc/msgpack-rpc-python)
 - [daemonize](https://github.com/thesharp/daemonize)
@@ -261,4 +283,3 @@ testtest
 - 微信：david_jlu
 - QQ：26126441
 - 邮箱：<david_jlu@foxmail.com>
-
