@@ -57,8 +57,8 @@
     }
 ```
 - **普通服务描述**：定义普通服务，即不接受rpc请求的后台服务，对应描述文件中的self_server字段，如下json片段是一些常见的例子
-        - dispatch_type：只支持simple和custom两种simple会生成worker_sum个工作者，做同样的任务；custom会生成若干个工作组，工作组之间做不同的任务
-        - worker_type：只支持process、thread和process_coroutine三种，其中process_coroutine会生成worker_sum个进程、每个进程coroutine_sum个协程
+        - dispatch_type：支持simple和custom两种，simple会生成worker_sum个工作者，做同样的任务；custom会生成若干个工作组，工作组之间做不同的任务
+        - worker_type：支持process、thread、coroutine和process_coroutine四种，其中process_coroutine会生成worker_sum个进程、每个进程coroutine_sum个协程
 ```json
     "self_server": {
                 "dispatch_type": "simple",
@@ -102,7 +102,26 @@
                 }]
     }
 ```
-
+```json
+    "self_server": {
+                "dispatch_type": "simple",
+                "worker_type": "coroutine",
+                "worker_sum": 100
+        }
+```
+```json
+    "self_server": {
+                "dispatch_type": "custom",
+                "worker_type": "coroutine",
+                "groups" : [{
+                        "group_name": "event",
+                        "worker_sum": 2
+                },{
+                        "group_name": "value",
+                        "worker_sum": 3
+                }]
+        }
+```
 #创建echo服务
 - git clone https://github.com/jackdai123/pysvrkit.git
 - mkdir echo && cd echo
