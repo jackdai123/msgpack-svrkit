@@ -5,7 +5,11 @@ PYTHONPATH=${PYTHONPATH}
 
 NAME="${app}"
 MAINPATH=$(cd "$(dirname "$0")"; pwd)
-SVRNAME=$MAINPATH/${NAME}_svr.py
+if [[ -e $MAINPATH/${NAME}_svr.py ]]; then
+	SVRNAME=$MAINPATH/${NAME}_svr.py
+else
+	SVRNAME=$MAINPATH/${NAME}_svr.pyc
+fi
 SVRCONF=$MAINPATH/${NAME}_svr.conf
 DAEMON="python $SVRNAME -f $SVRCONF -d"
 

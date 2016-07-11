@@ -527,6 +527,15 @@ def gen_svr_control_file():
 		print traceback.format_exc()
 		sys.exit()
 
+def gen_init_file():
+	global toolpath, codepath, jsondata
+	try:
+		shutil.copy(os.path.join(toolpath, '__init__.py'),
+				os.path.join(codepath, '__init__.py'))
+	except Exception,e:
+		print traceback.format_exc()
+		sys.exit()
+
 if __name__ == '__main__':
 	parse_opts(sys.argv)
 	check_conf_file(sys.argv)
@@ -540,4 +549,5 @@ if __name__ == '__main__':
 	gen_client_file()
 	gen_test_file()
 	gen_svr_control_file()
+	gen_init_file()
 
