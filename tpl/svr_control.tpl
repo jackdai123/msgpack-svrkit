@@ -1,7 +1,7 @@
 #!/bin/sh
 
-PATH=/sbin:/bin:/usr/sbin:/usr/bin
-PYTHONPATH=${PYTHONPATH}
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin
+export PYTHONPATH=${PYTHONPATH}
 
 NAME="${app}"
 MAINPATH=$(cd "$(dirname "$0")"; pwd)
