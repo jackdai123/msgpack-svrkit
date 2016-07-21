@@ -100,7 +100,7 @@
 					isdead = self_worker_map[key].dead
 				if isdead:
 					key_arr = key.split('_')
-					self_worker_map[key] = self.create_self_worker(self_worker_type, key_arr[0], key_arr[1], args)
+					self_worker_map[key] = self.create_self_worker(self_worker_type, key_arr[0], int(key_arr[1]), args)
 					self_worker_map[key].start()
 
 	def start_self_server(self, self_worker_type):

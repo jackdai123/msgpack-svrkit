@@ -45,7 +45,8 @@ class Service:
 			daemon = daemonize.Daemonize(
 				app = self.conf.get('app', 'name'),
 				pid = self.conf.get('app', 'pid'),
-				action = self.start_server)
+				action = self.start_server,
+				auto_close_fds = False)
 			daemon.start()
 		else:
 			self.start_server()
