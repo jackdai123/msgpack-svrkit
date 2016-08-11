@@ -542,8 +542,9 @@ def gen_readme_file():
 def gen_global_init():
 	global toolpath, codepath, jsondata
 	global_init_dir = os.path.join(codepath, 'global_init')
-	if not os.path.exists(global_init_dir):
-		os.mkdir(global_init_dir)
+	if os.path.exists(global_init_dir):
+		shutil.rmtree(global_init_dir)
+	os.mkdir(global_init_dir)
 
 	try:
 		shutil.copy(os.path.join(toolpath, 'global_init_init.tpl'),
@@ -557,8 +558,9 @@ def gen_global_init():
 def gen_rpc_cli():
 	global toolpath, codepath, jsondata
 	rpc_cli_dir = os.path.join(codepath, 'rpc_cli')
-	if not os.path.exists(rpc_cli_dir):
-		os.mkdir(rpc_cli_dir)
+	if os.path.exists(rpc_cli_dir):
+		shutil.rmtree(rpc_cli_dir)
+	os.mkdir(rpc_cli_dir)
 
 	try:
 		shutil.copy(os.path.join(toolpath, 'rpc_cli_init.tpl'),
@@ -572,8 +574,9 @@ def gen_rpc_cli():
 def gen_rpc_handler():
 	global toolpath, codepath, jsondata
 	rpc_handler_dir = os.path.join(codepath, 'rpc_handler')
-	if not os.path.exists(rpc_handler_dir):
-		os.mkdir(rpc_handler_dir)
+	if os.path.exists(rpc_handler_dir):
+		shutil.rmtree(rpc_handler_dir)
+	os.mkdir(rpc_handler_dir)
 
 	try:
 		fp = open(os.path.join(toolpath, 'rpc_handler_init.tpl'), 'r')
@@ -621,8 +624,9 @@ def gen_rpc_handler():
 def gen_rpc_init():
 	global toolpath, codepath, jsondata
 	rpc_init_dir = os.path.join(codepath, 'rpc_init')
-	if not os.path.exists(rpc_init_dir):
-		os.mkdir(rpc_init_dir)
+	if os.path.exists(rpc_init_dir):
+		shutil.rmtree(rpc_init_dir)
+	os.mkdir(rpc_init_dir)
 
 	try:
 		shutil.copy(os.path.join(toolpath, 'rpc_init_init.tpl'),
@@ -636,8 +640,9 @@ def gen_rpc_init():
 def gen_rpc_proto():
 	global toolpath, codepath, jsondata
 	rpc_proto_dir = os.path.join(codepath, 'rpc_proto')
-	if not os.path.exists(rpc_proto_dir):
-		os.mkdir(rpc_proto_dir)
+	if os.path.exists(rpc_proto_dir):
+		shutil.rmtree(rpc_proto_dir)
+	os.mkdir(rpc_proto_dir)
 
 	try:
 		shutil.copy(os.path.join(toolpath, '__init__.py'),
@@ -650,8 +655,9 @@ def gen_rpc_proto():
 def gen_rpc_test():
 	global toolpath, codepath
 	rpc_test_dir = os.path.join(codepath, 'rpc_test')
-	if not os.path.exists(rpc_test_dir):
-		os.mkdir(rpc_test_dir)
+	if os.path.exists(rpc_test_dir):
+		shutil.rmtree(rpc_test_dir)
+	os.mkdir(rpc_test_dir)
 
 	try:
 		shutil.copy(os.path.join(toolpath, '__init__.py'),
@@ -664,8 +670,9 @@ def gen_rpc_test():
 def gen_self_handler():
 	global toolpath, codepath
 	self_handler_dir = os.path.join(codepath, 'self_handler')
-	if not os.path.exists(self_handler_dir):
-		os.mkdir(self_handler_dir)
+	if os.path.exists(self_handler_dir):
+		shutil.rmtree(self_handler_dir)
+	os.mkdir(self_handler_dir)
 
 	try:
 		shutil.copy(os.path.join(toolpath, 'self_handler_init.tpl'),
@@ -678,8 +685,9 @@ def gen_self_handler():
 def gen_self_init():
 	global toolpath, codepath, jsondata
 	self_init_dir = os.path.join(codepath, 'self_init')
-	if not os.path.exists(self_init_dir):
-		os.mkdir(self_init_dir)
+	if os.path.exists(self_init_dir):
+		shutil.rmtree(self_init_dir)
+	os.mkdir(self_init_dir)
 
 	try:
 		shutil.copy(os.path.join(toolpath, 'self_init_init.tpl'),
@@ -693,8 +701,9 @@ def gen_self_init():
 def gen_utils():
 	global toolpath, codepath, jsondata
 	utils_dir = os.path.join(codepath, 'utils')
-	if not os.path.exists(utils_dir):
-		os.mkdir(utils_dir)
+	if os.path.exists(utils_dir):
+		shutil.rmtree(utils_dir)
+	os.mkdir(utils_dir)
 
 	try:
 		shutil.copy(os.path.join(toolpath, '__init__.py'),
