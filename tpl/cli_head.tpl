@@ -3,29 +3,29 @@
 
 import os
 import sys
-import time
+import string
 import random
+import socket
 import ConfigParser
 import msgpackrpc
 import traceback
-import string
 import consistent_hash
-import socket
+import importlib
 
 class Client(object):
 	#@param conffile : str
-	#@param shardingID : int
-	def __init__(self, conffile, shardingID=None):
+	#@param caller : str
+	def __init__(self, conffile, caller=''):
 		self.addrs = {}
 		self.weight = {}
 		self.bakaddrs = {}
 		self.shardsec = {}
 		self.downs = []
-		self.clientkey = None
+		self.clientkey = 0
+		self.caller = caller
+		self.rpc_proto = None
 
 		try:
-			if shardingID != None:
-				self.clientkey = shardingID
 			self.conf = ConfigParser.ConfigParser()
 			self.conf.read(conffile)
 			self.mode = self.conf.get('server', 'mode')
@@ -48,17 +48,31 @@ class Client(object):
 				else:
 					raise TypeError('type of server mode isnot correct!')
 			self._build_client()
+			self._get_rpc_proto()
 		except Exception, e:
 			print traceback.format_exc()
 			sys.exit()
+
+	def _get_rpc_proto(self):
+		absolute_path = os.path.dirname(os.path.abspath(os.path.join(__file__, '..')))
+		for python_path in os.getenv('PYTHONPATH').split(':'):
+			if absolute_path.startswith(python_path):
+				rootpath = os.path.relpath(absolute_path, python_path).replace(os.path.sep, '.')
+				self.rpc_proto = importlib.import_module('.rpc_proto.${app}_rpc_proto', rootpath)
+				break
+		else:
+			raise IOError('%s is not in PYTHONPATH' % (__file__))
+
+	def setShardingID(self, shardingID):
+		if type(shardingID) != type(1):
+			raise TypeError('shardingID isnot int type!')
+		self.clientkey = shardingID
 
 	def _build_client(self):
 		if self.mode == 'hashring':
 			self.con_hash = consistent_hash.ConsistentHash(self.weight)
 			self._set_hashring_client()
 		elif self.mode == 'sharding':
-			if type(self.clientkey) != type(1):
-				raise TypeError('shardingID isnot int type')
 			self._set_sharding_client()
 
 	def _rebuild_hashring_client(self):
@@ -69,7 +83,8 @@ class Client(object):
 				recovers.append(down_server)
 				self.con_hash.add_nodes({down_server : self.weight[down_server]})
 		for s in recovers:
-			self.downs.remove(s)
+			if s in self.downs:
+				self.downs.remove(s)
 		self._set_hashring_client()
 
 	def _set_hashring_client(self):
@@ -110,7 +125,10 @@ class Client(object):
 
 	def _hashring_failover(self):
 		self.downs.append(self.con_server)
-		self.con_hash.del_nodes([self.con_server])
+		try:
+			self.con_hash.del_nodes([self.con_server])
+		except Exception as e:
+			pass
 		if len(self.downs) > len(self.addrs)/2:
 			self._rebuild_hashring_client()
 		else:

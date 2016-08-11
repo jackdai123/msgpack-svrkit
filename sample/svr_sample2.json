@@ -22,8 +22,9 @@
 			"name": "echo",
 			"args": [{
 				"name": "msg",
-				"type": "echomsg"
+				"type": "string"
 			}],
+			"proto": "echomsg",
 			"ret": true
 		}]
 	},
