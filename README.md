@@ -1,8 +1,8 @@
 # pysvrkit简介
 **pysvrkit**是一个用来生成python服务框架（skeleton）的工具，主要为了提升后台python工程师的开发效率，特点如下：
-> * **基于msgpack的rpc** ：[msgpack](http://msgpack.org/)是一个快速精巧的二进制打包协议，支持超过50种开发语言，基于msgpack可以容易的跨语言开发；
-> * **IDL描述文件** ：使用pysvrkit生成服务代码前，需书写[IDL](http://baike.baidu.com/link?url=lDbMtbnZgrE1cW-N3yBZ35xYWWHPTSUXYxWtH81cduOZ7O7NfLN_IGKRxbHPyvKZkO0Uperzq2wu-f0wMKEduaGdK3j1IyV7vG8WxGrYRAa)文件，定义服务名称、服务工作模式、rpc接口和协议、客户端分布方式等等；
-> * **多种工作模式** ：支持多进程、多线程、协程工作模式，根据使用场景不同在IDL描述文件选择不同的工作模式。
+> * **基于msgpack的rpc** ：[msgpack](http://msgpack.org/)是一个快速精巧的二进制打包协议，支持超过50种开发语言，基于msgpack可以容易的跨语言开发
+> * **IDL描述文件** ：使用pysvrkit生成服务代码前，需书写[IDL](http://baike.baidu.com/link?url=lDbMtbnZgrE1cW-N3yBZ35xYWWHPTSUXYxWtH81cduOZ7O7NfLN_IGKRxbHPyvKZkO0Uperzq2wu-f0wMKEduaGdK3j1IyV7vG8WxGrYRAa)文件，定义服务名称、服务工作模式、rpc接口和协议、客户端分布方式等等
+> * **多种工作模式** ：支持多进程、多线程、协程工作模式，根据使用场景不同在IDL描述文件选择不同的工作模式
 > * **多种客户端分布方式**：支持分片、一致性哈希等多种分布方式，根据使用场景不同在IDL描述文件选择不同的分布式方式
 
 # IDL描述文件
@@ -18,10 +18,10 @@
 ```json
 "protos": [{
 	"name": "echomsg",
-        "fields": [{
-                "name": "value",
-                "type": "string"
-        }]
+	"fields": [{
+		"name": "value",
+		"type": "string"
+	}]
 }]
 ```
 
@@ -33,7 +33,7 @@ pysvrkit由客户端来决定路由，即请求发送到哪台服务器，对应
 
 ```json
 "rpc_client": {
-        "mode": "hashring"
+	"mode": "hashring"
 }
 ```
 
@@ -54,19 +54,19 @@ pysvrkit由客户端来决定路由，即请求发送到哪台服务器，对应
 
 ```json
 "rpc_server": {
-        "ip": "0.0.0.0",
-        "port": 3000,
-        "worker_type": "thread",
-        "worker_sum": 4,
-        "apis": [{
-                "name": "echo",
-                "args": [{
-                        "name": "msg",
-                        "type": "string"
-                }],
-                "req_proto": "echomsg",
-                "res_proto": "echomsg"
-        }]
+	"ip": "0.0.0.0",
+	"port": 3000,
+	"worker_type": "thread",
+	"worker_sum": 4,
+	"apis": [{
+		"name": "echo",
+		"args": [{
+			"name": "msg",
+			"type": "string"
+		}],
+		"req_proto": "echomsg",
+		"res_proto": "echomsg"
+	}]
 }
 ```
 
@@ -77,70 +77,70 @@ pysvrkit由客户端来决定路由，即请求发送到哪台服务器，对应
 
 ```json
 "self_server": {
-        "dispatch_type": "simple",
-        "worker_type": "thread",
-        "worker_sum": 4
+	"dispatch_type": "simple",
+	"worker_type": "thread",
+	"worker_sum": 4
 }
 ```
 
 ```json
 "self_server": {
-        "dispatch_type": "simple",
-        "worker_type": "process_coroutine",
-        "worker_sum": 2,
-        "coroutine_sum": 100
+	"dispatch_type": "simple",
+	"worker_type": "process_coroutine",
+	"worker_sum": 2,
+	"coroutine_sum": 100
 }
 ```
 
 ```json
 "self_server": {
-        "dispatch_type": "custom",
-        "worker_type": "process",
-        "groups" : [{
-                "group_name": "event",
-                "worker_sum": 2
-        },{
-                "group_name": "value",
-                "worker_sum": 2
-        }]
+	"dispatch_type": "custom",
+	"worker_type": "process",
+	"groups" : [{
+		"group_name": "event",
+		"worker_sum": 2
+	},{
+		"group_name": "value",
+		"worker_sum": 2
+	}]
 }
 ```
 
 ```json
 "self_server": {
-        "dispatch_type": "custom",
-        "worker_type": "process_coroutine",
-        "groups" : [{
-                "group_name": "event",
-                "worker_sum": 2,
-                "coroutine_sum": 100
-        },{
-                "group_name": "value",
-                "worker_sum": 2,
-                "coroutine_sum": 100
-        }]
+	"dispatch_type": "custom",
+	"worker_type": "process_coroutine",
+	"groups" : [{
+		"group_name": "event",
+		"worker_sum": 2,
+		"coroutine_sum": 100
+	},{
+		"group_name": "value",
+		"worker_sum": 2,
+		"coroutine_sum": 100
+	}]
 }
 ```
 
 ```json
 "self_server": {
-        "dispatch_type": "simple",
-        "worker_type": "coroutine",
-        "worker_sum": 100
+	"dispatch_type": "simple",
+	"worker_type": "coroutine",
+	"worker_sum": 100
 }
 ```
 
 ```json
 "self_server": {
-        "dispatch_type": "custom",
-        "worker_type": "coroutine",
-        "groups" : [{
-                "group_name": "event",
-                "worker_sum": 2
-        },{
-                "group_name": "value",
-                "worker_sum": 3
-        }]
+	"dispatch_type": "custom",
+	"worker_type": "coroutine",
+	"groups" : [{
+		"group_name": "event",
+		"worker_sum": 2
+	},{
+		"group_name": "value",
+		"worker_sum": 3
+	}]
 }
 ```
 
@@ -150,59 +150,59 @@ pysvrkit由客户端来决定路由，即请求发送到哪台服务器，对应
 - cat echo.json
 ```json
 {
-        "app": "echo",
+	"app": "echo",
 
-        "protos": [{
-                "name": "echomsg",
-                "fields": [{
-                        "name": "my_string",
-                        "type": "string"
-                },{
-                        "name": "vec_int",
-                        "type": "list"
-                },{
-                        "name": "vec_string",
-                        "type": "list"
-                }]
-        }],
+	"protos": [{
+		"name": "echomsg",
+		"fields": [{
+			"name": "my_string",
+			"type": "string"
+		},{
+			"name": "vec_int",
+			"type": "list"
+		},{
+			"name": "vec_string",
+			"type": "list"
+		}]
+	}],
 
-        "rpc_client": {
-                "mode": "sharding"
-        },
+	"rpc_client": {
+		"mode": "sharding"
+	},
 
-        "rpc_server": {
-                "ip": "0.0.0.0",
-                "port": 3000,
-                "worker_type": "thread",
-                "worker_sum": 4,
-                "apis": [{
-                        "name": "echo",
-                        "args": [{
-                                "name": "my_string",
-                                "type": "string"
-                        },{
-                                "name": "vec_int",
-                                "type": "list"
-                        },{
-                                "name": "vec_string",
-                                "type": "list"
-                        }],
-                        "req_proto": "echomsg",
-                        "res_proto": "echomsg"
-                }]
-        },
+	"rpc_server": {
+		"ip": "0.0.0.0",
+		"port": 3000,
+		"worker_type": "thread",
+		"worker_sum": 4,
+		"apis": [{
+			"name": "echo",
+			"args": [{
+				"name": "my_string",
+				"type": "string"
+			},{
+				"name": "vec_int",
+				"type": "list"
+			},{
+				"name": "vec_string",
+				"type": "list"
+			}],
+			"req_proto": "echomsg",
+			"res_proto": "echomsg"
+		}]
+	},
 
-        "self_server": {
-                "dispatch_type": "custom",
-                "worker_type": "thread",
-                "groups" : [{
-                        "group_name": "event",
-                        "worker_sum": 2
-                },{
-                        "group_name": "value",
-                        "worker_sum": 2
-                }]
-        }
+	"self_server": {
+		"dispatch_type": "custom",
+		"worker_type": "thread",
+		"groups" : [{
+			"group_name": "event",
+			"worker_sum": 2
+		},{
+			"group_name": "value",
+			"worker_sum": 2
+		}]
+	}
 }
 ```
 - ../pysvrkit/bin/gen_svr.py -f echo.json -d .
@@ -228,7 +228,7 @@ drwxrwxr-x. 2 vagrant vagrant   44 Sep 27 05:44 utils
 > * echo：服务启停脚本，注意需设置脚本中的PYTHONPATH
 > * echo_svr.conf：服务配置文件
 > * echo_svr.py：服务代码
-> * global_init：rpc和self全局初始化
+> * global_init：rpc和self服务全局初始化
 > * rpc_cli：rpc客户端代码及配置文件
 > * rpc_handler：rpc服务端逻辑代码
 > * rpc_init：rpc服务初始化
@@ -315,8 +315,8 @@ echo ret <echo.rpc_proto.echo_rpc_proto.echomsg object at 0x1bfb290>
 ```python
 #修改rpc_test/echo_rpc_test.py，循环100w次
 def test_echo(self):
-        for i in xrange(1000000):
-                self.cli.echo('',[],[])
+	for i in xrange(1000000):
+		self.cli.echo('',[],[])
 ```
 - **有返回结果的测试**：IDL描述文件中rpc_server.apis不设置res_proto，qps为3000/s
 ```
