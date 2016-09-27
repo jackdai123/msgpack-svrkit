@@ -24,8 +24,8 @@
 				"name": "msg",
 				"type": "string"
 			}],
-			"proto": "echomsg",
-			"ret": true
+			"req_proto": "echomsg",
+			"res_proto": "echomsg"
 		}]
 	},
 
