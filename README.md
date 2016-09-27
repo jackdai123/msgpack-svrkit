@@ -1,12 +1,12 @@
 # pysvrkit简介
-**pysvrkit**是一个用来生成python服务框架（skeleton）的工具，主要为了提升后台python工程师的开发效率，特点如下：
+pysvrkit是一个用来生成python服务框架（skeleton）的工具，主要为了提升后台python工程师的开发效率，特点如下：
 > * **基于msgpack的rpc** ：[msgpack](http://msgpack.org/)是一个快速精巧的二进制打包协议，支持超过50种开发语言，基于msgpack可以容易的跨语言开发
 > * **IDL描述文件** ：使用pysvrkit生成服务代码前，需书写[IDL](http://baike.baidu.com/link?url=lDbMtbnZgrE1cW-N3yBZ35xYWWHPTSUXYxWtH81cduOZ7O7NfLN_IGKRxbHPyvKZkO0Uperzq2wu-f0wMKEduaGdK3j1IyV7vG8WxGrYRAa)文件，定义服务名称、服务工作模式、rpc接口和协议、客户端分布方式等等
 > * **多种工作模式** ：支持多进程、多线程、协程工作模式，根据使用场景不同在IDL描述文件选择不同的工作模式
 > * **多种客户端分布方式**：支持分片、一致性哈希等多种分布方式，根据使用场景不同在IDL描述文件选择不同的分布式方式
 
 # IDL描述文件
-**IDL描述文件**是一个json文件，主要包括rpc协议、客户端分布、rpc服务描述、普通服务描述四部分：
+IDL描述文件是一个json文件，主要包括rpc协议、客户端分布、rpc服务描述、普通服务描述四部分：
 ## 1. **rpc协议**
 定义rpc协议数据结构，对应描述文件中的protos字段，如下json片段定义了只包含一个字符串字段名叫echomsg结构，其中字段类型支持string、bool、int、float、list、tuple、dict
 
