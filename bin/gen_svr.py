@@ -10,7 +10,7 @@ import traceback
 import shutil
 
 jsonfile = ''
-jsondata = None
+jsondata = {}
 toolpath = ''
 codepath = ''
 
@@ -24,7 +24,7 @@ def print_usage(argv):
 
 def parse_opts(argv):
 	global jsonfile, codepath, toolpath
-	toolpath = os.path.dirname(os.path.realpath(argv[0])) + '/tpl'
+	toolpath = os.path.dirname(os.path.dirname(os.path.realpath(argv[0]))) + '/tpl'
 	try:
 		opts, args = getopt.getopt(argv[1:], "d:f:h")
 	except getopt.GetoptError:
@@ -113,17 +113,19 @@ def get_init_value(data_type):
 def gen_proto_file(rpc_proto_dir):
 	global jsondata
 	if 'protos' in jsondata:
-		content = '#!/usr/bin/env python\n#-*- coding: utf-8 -*-\n\nimport msgpack\n\n'
+		content = '#!/usr/bin/env python\n#-*- coding: utf-8 -*-\n\n'
 		for proto in jsondata['protos']:
 			content += 'class %s(object):\n\tdef __init__(self):\n' % (proto['name'])
 			for field in proto['fields']:
 				content += '\t\tself.%s = %s\n' % (field['name'], get_init_value(field['type']))
-			content += '\n\tdef to_msgpack(self):\n\t\treturn msgpack.dumps({\n'
+			content += '\n\tdef to_msgpack(self):\n\t\treturn [\n'
 			for field in proto['fields']:
-				content += '\t\t\t\'%s\' : self.%s,\n' % (field['name'], field['name'])
-			content += '\t\t\t})\n\n\tdef from_msgpack(self, msg):\n\t\tm = msgpack.loads(msg)\n'
+				content += '\t\t\tself.%s,\n' % (field['name'])
+			content += '\t\t]\n\n\tdef from_msgpack(self, msg):\n'
+			index = 0
 			for field in proto['fields']:
-				content += '\t\tself.%s = m[\'%s\']\n' % (field['name'], field['name'])
+				content += '\t\tself.%s = msg[%d]\n' % (field['name'], index)
+				index += 1
 			content += '\n'
 
 		try:
@@ -318,6 +320,8 @@ def gen_server_file():
 
 def gen_rpc_handler_file():
 	global codepath, jsondata
+	if 'rpc_server' not in jsondata:
+		return
 	content = '#!/usr/bin/env python\n#-*- coding: utf-8 -*-\n\nimport %s_proto\n\n' % (jsondata['app'])
 	for api in jsondata['rpc_server']['apis']:
 		for arg in api['args']:
@@ -399,8 +403,6 @@ def gen_handler_file():
 
 def gen_cliconf_file(rpc_cli_dir):
 	global jsondata, toolpath
-	if 'rpc_server' not in jsondata:
-		return
 	try:
 		if jsondata['rpc_client']['mode'] == 'sharding':
 			shutil.copy(os.path.join(toolpath, 'cli_sharding_conf.py'),
@@ -420,25 +422,37 @@ def gen_rpc_cli_code():
 	for api in jsondata['rpc_server']['apis']:
 		for arg in api['args']:
 			content += '\t#@param %s : %s\n' % (arg['name'], arg['type'])
-		if api['ret']:
-			content += '\t#@return : yes\n'
-		else:
-			content += '\t#@return : no\n'
+		if 'req_proto' in api:
+			content += '\t#@req : %s\n' % (api['req_proto'])
+		if 'res_proto' in api:
+			content += '\t#@res : %s\n' % (api['res_proto'])
 		content += '\tdef %s(self' % (api['name'])
 		for arg in api['args']:
 			content += ', %s' % (arg['name'])
 		content += '):\n\t\tfor i in xrange(3):\n\t\t\ttry:\n'
-		if api['proto']:
-			content += '\t\t\t\tm = self.rpc_proto.%s()\n' % (api['proto'])
+		if 'req_proto' in api:
 			for proto in jsondata['protos']:
-				if proto['name'] == api['proto']:
+				if proto['name'] == api['req_proto']:
+					content += '\t\t\t\treq = self.rpc_proto.%s()\n' % (api['req_proto'])
 					for field in proto['fields']:
-						content += '\t\t\t\tm.%s = %s\n' % (field['name'], get_init_value(field['type']))
+						content += '\t\t\t\treq.%s = %s\n' % (field['name'], get_init_value(field['type']))
 					break
+			else:
+				content += '\t\t\t\treq = %s\n' % (get_init_value(api['req_proto']))
 		content += '\t\t\t\tfuture = self.client.call_async(\'%s\'' % (api['name'])
-		if api['proto']:
-			content += ', m'
-		content += ')\n\t\t\t\treturn future.get()\n'
+		if 'req_proto' in api:
+			content += ', req'
+		content += ')\n\t\t\t\tresult = future.get()\n'
+		if 'res_proto' in api:
+			for proto in jsondata['protos']:
+				if proto['name'] == api['res_proto']:
+					content += '\t\t\t\tres = self.rpc_proto.%s()\n' % (api['res_proto'])
+					content += '\t\t\t\tres.from_msgpack(result)\n\t\t\t\treturn res\n'
+					break
+			else:
+				content += '\t\t\t\treturn result\n'
+		else:
+			content += '\t\t\t\treturn result\n'
 		content += '\t\t\texcept Exception, e:\n\t\t\t\tif not self._failover():\n\t\t\t\t\tbreak\n\n'
 	return content
 
@@ -458,16 +472,8 @@ def gen_rpc_cli_file(rpc_cli_dir):
 		print traceback.format_exc()
 		sys.exit()
 
-def gen_client_file(rpc_cli_dir):
-	global jsondata
-	if 'rpc_server' in jsondata:
-		gen_rpc_cli_file(rpc_cli_dir)
-
 def gen_test_file(rpc_test_dir):
 	global jsondata
-	if 'rpc_server' not in jsondata:
-		return
-
 	content = ''
 	try:
 		fp = open(os.path.join(toolpath, 'rpc_test_app.py'), 'r')
@@ -566,7 +572,7 @@ def gen_rpc_cli():
 		shutil.copy(os.path.join(toolpath, 'rpc_cli_init.py'),
 				os.path.join(rpc_cli_dir, '__init__.py'))
 		gen_cliconf_file(rpc_cli_dir)
-		gen_client_file(rpc_cli_dir)
+		gen_rpc_cli_file(rpc_cli_dir)
 	except Exception,e:
 		print traceback.format_exc()
 		sys.exit()
@@ -584,15 +590,12 @@ def gen_rpc_handler():
 		fp.close()
 		for api in jsondata['rpc_server']['apis']:
 			content += '\tdef %s(self' % (api['name'])
-			if api['proto']:
-				content += ', m'
+			if 'req_proto' in api:
+				content += ', req'
 			content += '):\n\t\tres = self.rpc_worker_pool.apply_async(self.func_map[\'%s\'].%s' % (api['name'], api['name'])
-			if api['proto']:
-				content += ', (m,)'
-			content += ')\n'
-			if api['ret']:
-				content += '\t\treturn res.get()\n'
-			content += '\n'
+			if 'req_proto' in api:
+				content += ', (req,)'
+			content += ')\n\t\treturn res.get()\n\n'
 		fp = open(os.path.join(rpc_handler_dir, '__init__.py'), 'w')
 		fp.write(content)
 		fp.close()
@@ -602,18 +605,34 @@ def gen_rpc_handler():
 		fp.close()
 		content = content.replace('${app}', jsondata['app'])
 		for api in jsondata['rpc_server']['apis']:
+			if 'req_proto' in api:
+				content += '\t#@req : %s\n' % (api['req_proto'])
+			if 'res_proto' in api:
+				content += '\t#@res : %s\n' % (api['res_proto'])
 			content += '\tdef %s(self' % (api['name'])
-			if api['proto']:
+			if 'req_proto' in api:
 				content += ', m'
 			content += '):\n'
-			if api['proto']:
-				content += '\t\tmsg = self.rpc_proto.%s()\n' % (api['proto'])
-				content += '\t\tmsg.from_msgpack(m)\n'
-			if api['ret']:
-				content += '\t\treturn None'
+			if 'req_proto' in api:
+				for proto in jsondata['protos']:
+					if proto['name'] == api['req_proto']:
+						content += '\t\treq = self.rpc_proto.%s()\n' % (api['req_proto'])
+						content += '\t\treq.from_msgpack(m)\n\n'
+						break
+				else:
+					content += '\t\treq = m\n\n'
+			content += '\t\t########add logic code here########\n\n'
+			content += '\t\t########end logic code########\n\n'
+			if 'res_proto' in api:
+				for proto in jsondata['protos']:
+					if proto['name'] == api['res_proto']:
+						content += '\t\tres = self.rpc_proto.%s()\n' % (api['res_proto'])
+						break
+				else:
+					content += '\t\tres = %s\n' % (get_init_value(api['res_proto']))
+				content += '\t\treturn res\n\n'
 			else:
-				content += '\t\tpass'
-			content += '\n\n'
+				content += '\t\treturn None\n\n'
 		fp = open(os.path.join(rpc_handler_dir, '%s_rpc_handler.py' % (jsondata['app'])), 'w')
 		fp.write(content)
 		fp.close()
@@ -719,18 +738,23 @@ if __name__ == '__main__':
 	check_conf_file(sys.argv)
 	parse_conf_file()
 	check_srcpath(sys.argv)
+
 	gen_init_file()
 	gen_svr_control_file()
 	gen_svrconf_file()
 	gen_server_file()
 	gen_readme_file()
 	gen_global_init()
-	gen_rpc_cli()
-	gen_rpc_handler()
-	gen_rpc_init()
-	gen_rpc_proto()
-	gen_rpc_test()
-	gen_self_handler()
-	gen_self_init()
 	gen_utils()
+
+	if 'rpc_server' in jsondata:
+		gen_rpc_cli()
+		gen_rpc_handler()
+		gen_rpc_init()
+		gen_rpc_proto()
+		gen_rpc_test()
+
+	if 'self_server' in jsondata:
+		gen_self_handler()
+		gen_self_init()
 

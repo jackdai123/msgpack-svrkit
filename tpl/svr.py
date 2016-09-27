@@ -8,6 +8,7 @@ import ConfigParser
 import traceback
 import daemonize
 import ctypes
+import signal
 import importlib
 import multiprocessing
 from multiprocessing import Pool as ProcessPool
@@ -70,6 +71,9 @@ class Service:
 		print '\t-h\tshow help'
 
 	def start(self):
+		signal.signal(signal.SIGINT, signal.SIG_DFL)
+		signal.signal(signal.SIGTERM, signal.SIG_DFL)
+
 		if self.daemon:
 			daemon = daemonize.Daemonize(
 				app = self.conf.get('app', 'name'),
