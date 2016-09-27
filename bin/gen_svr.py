@@ -11,7 +11,7 @@ import shutil
 
 jsonfile = ''
 jsondata = {}
-toolpath = ''
+py_tpl_path = ''
 codepath = ''
 
 def print_usage(argv):
@@ -23,8 +23,8 @@ def print_usage(argv):
 	print '\t-h\tshow help'
 
 def parse_opts(argv):
-	global jsonfile, codepath, toolpath
-	toolpath = os.path.dirname(os.path.dirname(os.path.realpath(argv[0]))) + '/tpl'
+	global jsonfile, codepath, py_tpl_path
+	py_tpl_path = os.path.dirname(os.path.dirname(os.path.realpath(argv[0]))) + '/py_tpl'
 	try:
 		opts, args = getopt.getopt(argv[1:], "d:f:h")
 	except getopt.GetoptError:
@@ -137,10 +137,10 @@ def gen_proto_file(rpc_proto_dir):
 			sys.exit()
 
 def gen_comm_svr_head():
-	global toolpath, jsondata
+	global py_tpl_path, jsondata
 	content = ''
 	try:
-		fp = open(os.path.join(toolpath, 'comm_svr_head.py'), 'r')
+		fp = open(os.path.join(py_tpl_path, 'comm_svr_head.py'), 'r')
 		content = fp.read()
 		fp.close()
 		content = content.replace('${app}', jsondata['app'])
@@ -154,11 +154,11 @@ def gen_comm_svr_head():
 	return content
 
 def gen_rpc_svr_head():
-	global toolpath, jsondata
+	global py_tpl_path, jsondata
 	content = ''
 	if 'rpc_server' in jsondata:
 		try:
-			fp = open(os.path.join(toolpath, 'rpc_svr_head.py'), 'r')
+			fp = open(os.path.join(py_tpl_path, 'rpc_svr_head.py'), 'r')
 			content = fp.read()
 			content = content.replace('${app}', jsondata['app'])
 			fp.close()
@@ -168,7 +168,7 @@ def gen_rpc_svr_head():
 	return content
 
 def gen_self_svr_head():
-	global toolpath, jsondata
+	global py_tpl_path, jsondata
 	content = ''
 	if 'self_server' in jsondata:
 		content += 'import %s_self_handler\n\n' % (jsondata['app'])
@@ -197,10 +197,10 @@ def gen_rpc_handler_code():
 	return content
 
 def gen_comm_svr_body():
-	global toolpath
+	global py_tpl_path
 	content = ''
 	try:
-		fp = open(os.path.join(toolpath, 'comm_svr_body.py'), 'r')
+		fp = open(os.path.join(py_tpl_path, 'comm_svr_body.py'), 'r')
 		content = fp.read()
 		fp.close()
 	except Exception,e:
@@ -209,11 +209,11 @@ def gen_comm_svr_body():
 	return content
 
 def gen_rpc_svr_body():
-	global toolpath, jsondata
+	global py_tpl_path, jsondata
 	content = ''
 	if 'rpc_server' in jsondata:
 		try:
-			fp = open(os.path.join(toolpath, 'rpc_svr_body.py'), 'r')
+			fp = open(os.path.join(py_tpl_path, 'rpc_svr_body.py'), 'r')
 			content = fp.read()
 			fp.close()
 		except Exception,e:
@@ -222,11 +222,11 @@ def gen_rpc_svr_body():
 	return content
 
 def gen_self_svr_body():
-	global toolpath, jsondata
+	global py_tpl_path, jsondata
 	content = ''
 	if 'self_server' in jsondata:
 		try:
-			fp = open(os.path.join(toolpath, 'self_svr_body.py'), 'r')
+			fp = open(os.path.join(py_tpl_path, 'self_svr_body.py'), 'r')
 			content = fp.read()
 			content = content.replace('${app}', jsondata['app'])
 			fp.close()
@@ -236,7 +236,7 @@ def gen_self_svr_body():
 	return content
 
 def gen_start_server_head():
-	global toolpath, jsondata
+	global py_tpl_path, jsondata
 	content = '\tdef start_server(self):\n'
 	content += '\t\trpc_server_manager_dead = True\n'
 	content += '\t\tself_server_manager_dead = True\n\n'
@@ -244,11 +244,11 @@ def gen_start_server_head():
 	return content
 
 def gen_start_manager():
-	global toolpath, jsondata
+	global py_tpl_path, jsondata
 	content = ''
 	if 'rpc_server' in jsondata:
 		try:
-			fp = open(os.path.join(toolpath, 'rpc_start_manager.py'), 'r')
+			fp = open(os.path.join(py_tpl_path, 'rpc_start_manager.py'), 'r')
 			content += fp.read()
 			fp.close()
 		except Exception,e:
@@ -256,7 +256,7 @@ def gen_start_manager():
 			sys.exit()
 	if 'self_server' in jsondata:
 		try:
-			fp = open(os.path.join(toolpath, 'self_start_manager.py'), 'r')
+			fp = open(os.path.join(py_tpl_path, 'self_start_manager.py'), 'r')
 			content += fp.read()
 			fp.close()
 		except Exception,e:
@@ -265,11 +265,11 @@ def gen_start_manager():
 	return content
 
 def gen_join_manager():
-	global toolpath, jsondata
+	global py_tpl_path, jsondata
 	content = ''
 	if 'rpc_server' in jsondata:
 		try:
-			fp = open(os.path.join(toolpath, 'rpc_join_manager.py'), 'r')
+			fp = open(os.path.join(py_tpl_path, 'rpc_join_manager.py'), 'r')
 			content += fp.read()
 			fp.close()
 		except Exception,e:
@@ -277,7 +277,7 @@ def gen_join_manager():
 			sys.exit()
 	if 'self_server' in jsondata:
 		try:
-			fp = open(os.path.join(toolpath, 'self_join_manager.py'), 'r')
+			fp = open(os.path.join(py_tpl_path, 'self_join_manager.py'), 'r')
 			content += fp.read()
 			fp.close()
 		except Exception,e:
@@ -298,10 +298,10 @@ def gen_start_server():
 	return content
 
 def gen_comm_svr_tail():
-	global toolpath
+	global py_tpl_path
 	content = ''
 	try:
-		fp = open(os.path.join(toolpath, 'comm_svr_tail.py'), 'r')
+		fp = open(os.path.join(py_tpl_path, 'comm_svr_tail.py'), 'r')
 		content += fp.read()
 		fp.close()
 	except Exception,e:
@@ -310,9 +310,9 @@ def gen_comm_svr_tail():
 	return content
 
 def gen_server_file():
-	global toolpath, codepath, jsondata
+	global py_tpl_path, codepath, jsondata
 	try:
-		shutil.copy(os.path.join(toolpath, 'svr.py'),
+		shutil.copy(os.path.join(py_tpl_path, 'svr.py'),
 				os.path.join(codepath, jsondata['app'] + '_svr.py'))
 	except Exception,e:
 		print traceback.format_exc()
@@ -347,9 +347,9 @@ def gen_rpc_handler_file():
 		sys.exit()
 
 def gen_self_simple_handler_file(self_handler_dir):
-	global toolpath, jsondata
+	global py_tpl_path, jsondata
 	try:
-		shutil.copy(os.path.join(toolpath, 'simple_self_handler.py'),
+		shutil.copy(os.path.join(py_tpl_path, 'simple_self_handler.py'),
 				os.path.join(self_handler_dir, jsondata['app'] + '_self_handler.py'))
 	except Exception,e:
 		print traceback.format_exc()
@@ -376,10 +376,10 @@ def gen_self_custom_main_hanlder_file():
 		sys.exit()
 
 def gen_self_custom_logic_handler_file(self_handler_dir):
-	global toolpath, jsondata
+	global py_tpl_path, jsondata
 	try:
 		for group in jsondata['self_server']['groups']:
-			shutil.copy(os.path.join(toolpath, 'custom_self_handler.py'),
+			shutil.copy(os.path.join(py_tpl_path, 'custom_self_handler.py'),
 					os.path.join(self_handler_dir, '%s_%s_self_handler.py' % (jsondata['app'], group['group_name'])))
 	except Exception,e:
 		print traceback.format_exc()
@@ -402,13 +402,13 @@ def gen_handler_file():
 		gen_self_handler_file()
 
 def gen_cliconf_file(rpc_cli_dir):
-	global jsondata, toolpath
+	global jsondata, py_tpl_path
 	try:
 		if jsondata['rpc_client']['mode'] == 'sharding':
-			shutil.copy(os.path.join(toolpath, 'cli_sharding_conf.py'),
+			shutil.copy(os.path.join(py_tpl_path, 'cli_sharding_conf.py'),
 					os.path.join(rpc_cli_dir, jsondata['app'] + '_rpc_cli.conf'))
 		elif jsondata['rpc_client']['mode'] == 'hashring':
-			shutil.copy(os.path.join(toolpath, 'cli_hashring_conf.py'),
+			shutil.copy(os.path.join(py_tpl_path, 'cli_hashring_conf.py'),
 					os.path.join(rpc_cli_dir, jsondata['app'] + '_rpc_cli.conf'))
 		else:
 			raise TypeError('type of rpc_client mode isnot correct!')
@@ -457,10 +457,10 @@ def gen_rpc_cli_code():
 	return content
 
 def gen_rpc_cli_file(rpc_cli_dir):
-	global jsondata, toolpath, codepath
+	global jsondata, py_tpl_path, codepath
 	content = ''
 	try:
-		fp = open(os.path.join(toolpath, 'cli_head.py'), 'r')
+		fp = open(os.path.join(py_tpl_path, 'cli_head.py'), 'r')
 		content += fp.read()
 		fp.close()
 		content = content.replace('${app}', jsondata['app'])
@@ -476,7 +476,7 @@ def gen_test_file(rpc_test_dir):
 	global jsondata
 	content = ''
 	try:
-		fp = open(os.path.join(toolpath, 'rpc_test_app.py'), 'r')
+		fp = open(os.path.join(py_tpl_path, 'rpc_test_app.py'), 'r')
 		content += fp.read()
 		fp.close()
 	except Exception,e:
@@ -506,10 +506,10 @@ def gen_test_file(rpc_test_dir):
 		sys.exit()
 
 def gen_svr_control_file():
-	global jsondata, toolpath, codepath
+	global jsondata, py_tpl_path, codepath
 	content = ''
 	try:
-		fp = open(os.path.join(toolpath, 'svr_control.py'), 'r')
+		fp = open(os.path.join(py_tpl_path, 'svr_control.py'), 'r')
 		content = fp.read()
 		content = content.replace('${app}', jsondata['app'])
 		content = content.replace('${PYTHONPATH}', '/opt/au:/opt/gu:/opt/ke')
@@ -527,9 +527,9 @@ def gen_svr_control_file():
 		sys.exit()
 
 def gen_init_file():
-	global toolpath, codepath, jsondata
+	global py_tpl_path, codepath, jsondata
 	try:
-		shutil.copy(os.path.join(toolpath, '__init__.py'),
+		shutil.copy(os.path.join(py_tpl_path, '__init__.py'),
 				os.path.join(codepath, '__init__.py'))
 	except Exception,e:
 		print traceback.format_exc()
@@ -546,30 +546,30 @@ def gen_readme_file():
 		sys.exit()
 
 def gen_global_init():
-	global toolpath, codepath, jsondata
+	global py_tpl_path, codepath, jsondata
 	global_init_dir = os.path.join(codepath, 'global_init')
 	if os.path.exists(global_init_dir):
 		shutil.rmtree(global_init_dir)
 	os.mkdir(global_init_dir)
 
 	try:
-		shutil.copy(os.path.join(toolpath, 'global_init_init.py'),
+		shutil.copy(os.path.join(py_tpl_path, 'global_init_init.py'),
 				os.path.join(global_init_dir, '__init__.py'))
-		shutil.copy(os.path.join(toolpath, 'global_init_app.py'),
+		shutil.copy(os.path.join(py_tpl_path, 'global_init_app.py'),
 				os.path.join(global_init_dir, '%s_global_init.py' % (jsondata['app'])))
 	except Exception,e:
 		print traceback.format_exc()
 		sys.exit()
 
 def gen_rpc_cli():
-	global toolpath, codepath, jsondata
+	global py_tpl_path, codepath, jsondata
 	rpc_cli_dir = os.path.join(codepath, 'rpc_cli')
 	if os.path.exists(rpc_cli_dir):
 		shutil.rmtree(rpc_cli_dir)
 	os.mkdir(rpc_cli_dir)
 
 	try:
-		shutil.copy(os.path.join(toolpath, 'rpc_cli_init.py'),
+		shutil.copy(os.path.join(py_tpl_path, 'rpc_cli_init.py'),
 				os.path.join(rpc_cli_dir, '__init__.py'))
 		gen_cliconf_file(rpc_cli_dir)
 		gen_rpc_cli_file(rpc_cli_dir)
@@ -578,14 +578,14 @@ def gen_rpc_cli():
 		sys.exit()
 
 def gen_rpc_handler():
-	global toolpath, codepath, jsondata
+	global py_tpl_path, codepath, jsondata
 	rpc_handler_dir = os.path.join(codepath, 'rpc_handler')
 	if os.path.exists(rpc_handler_dir):
 		shutil.rmtree(rpc_handler_dir)
 	os.mkdir(rpc_handler_dir)
 
 	try:
-		fp = open(os.path.join(toolpath, 'rpc_handler_init.py'), 'r')
+		fp = open(os.path.join(py_tpl_path, 'rpc_handler_init.py'), 'r')
 		content = fp.read()
 		fp.close()
 		for api in jsondata['rpc_server']['apis']:
@@ -600,7 +600,7 @@ def gen_rpc_handler():
 		fp.write(content)
 		fp.close()
 
-		fp = open(os.path.join(toolpath, 'rpc_handler_app.py'), 'r')
+		fp = open(os.path.join(py_tpl_path, 'rpc_handler_app.py'), 'r')
 		content = fp.read()
 		fp.close()
 		content = content.replace('${app}', jsondata['app'])
@@ -641,30 +641,30 @@ def gen_rpc_handler():
 		sys.exit()
 
 def gen_rpc_init():
-	global toolpath, codepath, jsondata
+	global py_tpl_path, codepath, jsondata
 	rpc_init_dir = os.path.join(codepath, 'rpc_init')
 	if os.path.exists(rpc_init_dir):
 		shutil.rmtree(rpc_init_dir)
 	os.mkdir(rpc_init_dir)
 
 	try:
-		shutil.copy(os.path.join(toolpath, 'rpc_init_init.py'),
+		shutil.copy(os.path.join(py_tpl_path, 'rpc_init_init.py'),
 				os.path.join(rpc_init_dir, '__init__.py'))
-		shutil.copy(os.path.join(toolpath, 'rpc_init_app.py'),
+		shutil.copy(os.path.join(py_tpl_path, 'rpc_init_app.py'),
 				os.path.join(rpc_init_dir, '%s_rpc_init.py' % (jsondata['app'])))
 	except Exception,e:
 		print traceback.format_exc()
 		sys.exit()
 
 def gen_rpc_proto():
-	global toolpath, codepath, jsondata
+	global py_tpl_path, codepath, jsondata
 	rpc_proto_dir = os.path.join(codepath, 'rpc_proto')
 	if os.path.exists(rpc_proto_dir):
 		shutil.rmtree(rpc_proto_dir)
 	os.mkdir(rpc_proto_dir)
 
 	try:
-		shutil.copy(os.path.join(toolpath, '__init__.py'),
+		shutil.copy(os.path.join(py_tpl_path, '__init__.py'),
 				os.path.join(rpc_proto_dir, '__init__.py'))
 		gen_proto_file(rpc_proto_dir)
 	except Exception,e:
@@ -672,14 +672,14 @@ def gen_rpc_proto():
 		sys.exit()
 
 def gen_rpc_test():
-	global toolpath, codepath
+	global py_tpl_path, codepath
 	rpc_test_dir = os.path.join(codepath, 'rpc_test')
 	if os.path.exists(rpc_test_dir):
 		shutil.rmtree(rpc_test_dir)
 	os.mkdir(rpc_test_dir)
 
 	try:
-		shutil.copy(os.path.join(toolpath, '__init__.py'),
+		shutil.copy(os.path.join(py_tpl_path, '__init__.py'),
 				os.path.join(rpc_test_dir, '__init__.py'))
 		gen_test_file(rpc_test_dir)
 	except Exception,e:
@@ -687,14 +687,14 @@ def gen_rpc_test():
 		sys.exit()
 
 def gen_self_handler():
-	global toolpath, codepath
+	global py_tpl_path, codepath
 	self_handler_dir = os.path.join(codepath, 'self_handler')
 	if os.path.exists(self_handler_dir):
 		shutil.rmtree(self_handler_dir)
 	os.mkdir(self_handler_dir)
 
 	try:
-		shutil.copy(os.path.join(toolpath, 'self_handler_init.py'),
+		shutil.copy(os.path.join(py_tpl_path, 'self_handler_init.py'),
 				os.path.join(self_handler_dir, '__init__.py'))
 		gen_self_handler_file(self_handler_dir)
 	except Exception,e:
@@ -702,32 +702,32 @@ def gen_self_handler():
 		sys.exit()
 
 def gen_self_init():
-	global toolpath, codepath, jsondata
+	global py_tpl_path, codepath, jsondata
 	self_init_dir = os.path.join(codepath, 'self_init')
 	if os.path.exists(self_init_dir):
 		shutil.rmtree(self_init_dir)
 	os.mkdir(self_init_dir)
 
 	try:
-		shutil.copy(os.path.join(toolpath, 'self_init_init.py'),
+		shutil.copy(os.path.join(py_tpl_path, 'self_init_init.py'),
 				os.path.join(self_init_dir, '__init__.py'))
-		shutil.copy(os.path.join(toolpath, 'self_init_app.py'),
+		shutil.copy(os.path.join(py_tpl_path, 'self_init_app.py'),
 				os.path.join(self_init_dir, '%s_self_init.py' % (jsondata['app'])))
 	except Exception,e:
 		print traceback.format_exc()
 		sys.exit()
 
 def gen_utils():
-	global toolpath, codepath, jsondata
+	global py_tpl_path, codepath, jsondata
 	utils_dir = os.path.join(codepath, 'utils')
 	if os.path.exists(utils_dir):
 		shutil.rmtree(utils_dir)
 	os.mkdir(utils_dir)
 
 	try:
-		shutil.copy(os.path.join(toolpath, '__init__.py'),
+		shutil.copy(os.path.join(py_tpl_path, '__init__.py'),
 				os.path.join(utils_dir, '__init__.py'))
-		shutil.copy(os.path.join(toolpath, '__init__.py'),
+		shutil.copy(os.path.join(py_tpl_path, '__init__.py'),
 				os.path.join(utils_dir, '%s_utils.py' % (jsondata['app'])))
 	except Exception,e:
 		print traceback.format_exc()
