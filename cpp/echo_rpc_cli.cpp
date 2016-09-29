@@ -1,6 +1,6 @@
-#include "echo_rpc_cli.h"                                                                        
 #include "config.h"                                                                              
 #include "log_utils.h"                                                                           
+#include "echo_rpc_cli.h"                                                                        
 #include <jubatus/msgpack/rpc/client.h>                                                          
 #include <jubatus/msgpack/rpc/future.h>                                                          
 #include <exception>
@@ -80,7 +80,7 @@ namespace echo {
 	}
 
 	int Client::echo(int shard_id, const echomsg & req, echomsg & res) {
-		//next: add different dist mode, e.g. sharding and consistent_hash
+		//next: add different dist mode, e.g. consistent_hash
 		const Server_t * svr = global_client_config.GetByShard(shard_id);
 
 		if (svr) {

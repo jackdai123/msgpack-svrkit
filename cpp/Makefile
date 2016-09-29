@@ -29,9 +29,10 @@ DYNAMICLIBS = -lstdc++ -lpthread -lm
 ##### objs for compiling #####
 COM_OBJS = log_utils.o file_utils.o config.o opt_map.o
 CLI_OBJS = $(COM_OBJS) echo_rpc_cli.o
+SVR_OBJS = $(COM_OBJS) echo_rpc_handler.o echo_svr.o
 
 ##### target for compiling #####
-TARGETS = libecho_rpc_cli.a echo_rpc_test
+TARGETS = libecho_rpc_cli.a echo_rpc_test echo_svr
 
 ##### make targets #####
 all: $(TARGETS)
@@ -41,6 +42,9 @@ libecho_rpc_cli.a: $(CLI_OBJS)
 
 echo_rpc_test: echo_rpc_test.o libecho_rpc_cli.a
 	$(LINKER) $^ $(STATICFLAGS) -L. -lecho_rpc_cli $(STATICLIBS) $(DYNAMICFLAGS) $(DYNAMICLIBS) -o $@
+
+echo_svr: $(SVR_OBJS)
+	$(LINKER) $^ $(STATICFLAGS) $(STATICLIBS) $(DYNAMICFLAGS) $(DYNAMICLIBS) -o $@
 
 clean:
 	@($(RM) $(TARGETS))

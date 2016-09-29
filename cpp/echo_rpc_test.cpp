@@ -4,7 +4,6 @@
 
 namespace echo {
 
-
 	TestTool :: TestTool() {
 	}
 
