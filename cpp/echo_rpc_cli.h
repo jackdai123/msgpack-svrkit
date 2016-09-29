@@ -40,7 +40,7 @@ namespace echo {
 			static bool Init(const char * config_file);
 
 		public:
-			int echo(const echomsg & req, echomsg * res);
+			int echo(const echomsg & req, echomsg & res);
 	};
 
 }
