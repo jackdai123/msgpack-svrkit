@@ -3,6 +3,7 @@
 #include "log_utils.h"                                                                           
 #include <jubatus/msgpack/rpc/client.h>                                                          
 #include <jubatus/msgpack/rpc/future.h>                                                          
+#include <exception>
 
 namespace echo {                                                                                 
 
@@ -23,7 +24,7 @@ namespace echo {
 		succ &= config.ReadItem("server", "sum", &count);                                        
 		succ &= config.ReadItem("server", "shardsum", &(this->shard_sum_));                      
 		if (!succ) {                                                                             
-			log(LOG_ERR, "Config::%s key sum | shardsum not found", __func__);                   
+			log(LOG_ERR, "ClientConfig::%s key sum | shardsum not found", __func__);                   
 			return false;                                                                        
 		}                                                                                        
 
@@ -40,7 +41,7 @@ namespace echo {
 			succ &= config.ReadItem(section, "shardbegin", &(svr.shard_begin));                  
 			succ &= config.ReadItem(section, "shardend", &(svr.shard_end));                      
 			if (!succ) {                                                                         
-				log(LOG_ERR, "Config::%s server%d config err", __func__, i);                     
+				log(LOG_ERR, "ClientConfig::%s server%d config err", __func__, i);                     
 				return false;                                                                    
 			}                                                                                    
 
@@ -48,20 +49,18 @@ namespace echo {
 		}
 
 		if (this->servers_.empty()) {
-			log(LOG_ERR, "Config::%s no servers", __func__);
+			log(LOG_ERR, "ClientConfig::%s no servers", __func__);
 			return false;
 		}
 		return true;
 	}
 
-	const Endpoint_t * ClientConfig::GetByShard(const int shard_id) const {
+	const Server_t * ClientConfig::GetByShard(const int shard_id) const {
 		int id = shard_id % this->shard_sum_;
-		std::vector<Server_t>::const_iterator it;
 
-		for (it = this->servers_.begin(); it != this->servers_.end(); it++) {
-			if (it->shard_begin <= id && id <= it->shard_end) {
-				//next: add network check
-				return &(it->master);
+		for (size_t i = 0; i < this->servers_.size(); i++) {
+			if (this->servers_[i].shard_begin <= id && id <= this->servers_[i].shard_end) {
+				return &(this->servers_[i]);
 			}
 		}
 
@@ -80,15 +79,26 @@ namespace echo {
 		return global_client_config.Read(config_file);
 	}
 
-	int Client::echo(const echomsg & req, echomsg & res) {
+	int Client::echo(int shard_id, const echomsg & req, echomsg & res) {
 		//next: add different dist mode, e.g. sharding and consistent_hash
-		int shard_id = 0;
-		const Endpoint_t * ep = global_client_config.GetByShard(shard_id);
+		const Server_t * svr = global_client_config.GetByShard(shard_id);
 
-		if (ep) {
-			msgpack::rpc::client msgpack_cli(ep->ip, ep->port);
-			msgpack::rpc::future callback = msgpack_cli.call("echo", req);
-			res = callback.get< echomsg >();
+		if (svr) {
+			try {
+				msgpack::rpc::client msgpack_cli(svr->master.ip, svr->master.port);
+				msgpack::rpc::future callback = msgpack_cli.call("echo", req);
+				res = callback.get< echomsg >();
+			} catch (std::exception & e) {
+				log(LOG_ERR, "Client::%s master[%s:%d] %s", __func__, svr->master.ip, svr->master.port, e.what());
+				try {
+					msgpack::rpc::client msgpack_cli(svr->slave.ip, svr->slave.port);
+					msgpack::rpc::future callback = msgpack_cli.call("echo", req);
+					res = callback.get< echomsg >();
+				} catch (std::exception & e) {
+					log(LOG_ERR, "Client::%s slave[%s:%d] %s", __func__, svr->slave.ip, svr->slave.port, e.what());
+					return -1;
+				}
+			}
 			return 0;
 		}
 

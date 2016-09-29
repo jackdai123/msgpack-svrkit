@@ -35,7 +35,7 @@ namespace echo {
 		req.vec_string.push_back("yuki");
 
 		Client cli;
-		int ret = cli.echo( req, res );
+		int ret = cli.echo( 0, req, res );
 		printf( "%s return %d\n", __func__, ret );
 		printf( "res: %s [%d, %d] [\'%s\', \'%s\']\n", res.my_string.c_str(),
 				res.vec_int[0], res.vec_int[1],

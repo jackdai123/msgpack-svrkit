@@ -24,7 +24,7 @@ namespace echo {
 
 		public:
 			bool Read(const char * config_file);
-			const Endpoint_t * GetByShard(const int shard_id) const;
+			const Server_t * GetByShard(const int shard_id) const;
 
 		private:
 			int shard_sum_;
@@ -40,7 +40,7 @@ namespace echo {
 			static bool Init(const char * config_file);
 
 		public:
-			int echo(const echomsg & req, echomsg & res);
+			int echo(int shard_id, const echomsg & req, echomsg & res);
 	};
 
 }
