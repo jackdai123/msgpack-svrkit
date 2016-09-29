@@ -24,7 +24,6 @@ namespace echo {
 	bool Config::ReadItem(const char * section, const char * key, int * value) {
 		char tmp[128] = { 0 };
 		bool ret = ReadItem(section, key, tmp, sizeof(tmp));
-		printf("section:%s key:%s value:%s\n", section, key, tmp);
 		if (ret) {
 			*value = atoi(tmp);
 		}

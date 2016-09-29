@@ -21,9 +21,7 @@ namespace echo {
         int count = 0;                                                                           
         bool succ = true;                                                                        
         succ &= config.ReadItem("server", "sum", &count);                                        
-        printf("sum:%d ret:%d\n",count, succ);                                                   
         succ &= config.ReadItem("server", "shardsum", &(this->shard_sum_));                      
-        printf("shard_sum:%d\n",this->shard_sum_);                                               
         if (!succ) {                                                                             
             log(LOG_ERR, "Config::%s key sum | shardsum not found", __func__);                   
             return false;                                                                        
@@ -88,7 +86,6 @@ namespace echo {
         const Endpoint_t * ep = global_client_config.GetByShard(shard_id);
 
         if (ep) {
-            printf("%s %d\n", ep->ip, ep->port);
             msgpack::rpc::client msgpack_cli(ep->ip, ep->port);
             msgpack::rpc::future callback = msgpack_cli.call("echo", req);
             callback.get< echomsg >((msgpack::rpc::auto_zone*)res);
