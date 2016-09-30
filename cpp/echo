@@ -1,17 +1,12 @@
 #!/bin/sh
 
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin
-export PYTHONPATH=/opt/au:/opt/gu:/opt/ke
 
 NAME="echo"
 MAINPATH=$(cd "$(dirname "$0")"; pwd)
-if [[ -e $MAINPATH/${NAME}_svr.py ]]; then
-	SVRNAME=$MAINPATH/${NAME}_svr.py
-else
-	SVRNAME=$MAINPATH/${NAME}_svr.pyc
-fi
+SVRNAME=$MAINPATH/${NAME}_svr
 SVRCONF=$MAINPATH/${NAME}_svr.conf
-DAEMON="python $SVRNAME -f $SVRCONF -d"
+DAEMON="$SVRNAME -c $SVRCONF -d"
 
 do_start()
 {

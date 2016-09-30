@@ -13,6 +13,7 @@ namespace echo {
 			bool Read( const char * config_file );
 
 		public:
+			std::string GetPidFile();
 			std::string GetIP();
 			int GetPort();
 			int GetWorkerSum();

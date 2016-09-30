@@ -39,4 +39,23 @@ namespace echo {
 		return ret;
 	}
 
+	bool FileUtils::WriteFile(const char * path, const std::string & content) {
+		bool ret = false;
+
+		int fd = ::open(path, O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+		if (fd >= 0) {
+			if (write(fd, content.c_str(), content.size()) == ssize_t(content.size())) {
+				ret = true;
+			} else {
+				log(LOG_ERR, "WARN: write %s fail, errno %d, %s", path, errno, strerror(errno));
+			}
+
+			close(fd);
+		} else {
+			log(LOG_ERR, "WARN: open %s fail, errno %d, %s", path, errno, strerror(errno));
+		}
+	
+		return ret;
+	}
+
 }

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "echo_rpc_proto.h"
+#include <jubatus/msgpack/rpc/client.h>                                                          
 
 namespace echo {
 
@@ -33,14 +34,25 @@ namespace echo {
 
 	class Client {
 		public:
-			Client();
-			~Client();
-
-		public:
 			static bool Init(const char * config_file);
 
 		public:
-			int echo(int shard_id, const echomsg & req, echomsg & res);
+			Client();
+			Client(int shard_id);
+			~Client();
+
+		private:
+			void build_client_();
+			void destroy_client_();
+
+		public:
+			int echo(const echomsg & req, echomsg & res);
+
+		private:
+			int shard_id_;
+			const Server_t * svr_;
+			msgpack::rpc::client * master_cli_;
+			msgpack::rpc::client * slave_cli_;
 	};
 
 }

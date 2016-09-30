@@ -24,9 +24,9 @@ namespace echo {
 
 	void echo_rpc_handler :: echo( msgpack_stream stream, const echomsg & req ) {
 		//add logic code
-		printf( "req: %s [%d, %d] [\'%s\', \'%s\']\n", req.my_string.c_str(),
-				req.vec_int[0], req.vec_int[1],
-				req.vec_string[0].c_str(), req.vec_string[1].c_str() );
+		//printf( "req: %s [%d, %d] [\'%s\', \'%s\']\n", req.my_string.c_str(),
+		//		req.vec_int[0], req.vec_int[1],
+		//		req.vec_string[0].c_str(), req.vec_string[1].c_str() );
 
 		//construct response
 		echomsg res;

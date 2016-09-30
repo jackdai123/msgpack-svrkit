@@ -34,13 +34,15 @@ namespace echo {
 		req.vec_string.push_back("yuki");
 
 		Client cli;
-		int ret = cli.echo( 0, req, res );
-		printf( "%s return %d\n", __func__, ret );
-		printf( "res: %s [%d, %d] [\'%s\', \'%s\']\n", res.my_string.c_str(),
-				res.vec_int[0], res.vec_int[1],
-				res.vec_string[0].c_str(), res.vec_string[1].c_str() );
+		for (int i = 0; i < 1000000; i++) {
+			int ret = cli.echo( req, res );
+			//printf( "%s return %d\n", __func__, ret );
+			//printf( "res: %s [%d, %d] [\'%s\', \'%s\']\n", res.my_string.c_str(),
+			//		res.vec_int[0], res.vec_int[1],
+			//		res.vec_string[0].c_str(), res.vec_string[1].c_str() );
+		}
 
-		return ret;
+		return 0;
 	}
 
 }

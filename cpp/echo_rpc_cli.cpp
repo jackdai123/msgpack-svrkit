@@ -1,7 +1,6 @@
 #include "config.h"                                                                              
 #include "log_utils.h"                                                                           
 #include "echo_rpc_cli.h"                                                                        
-#include <jubatus/msgpack/rpc/client.h>                                                          
 #include <jubatus/msgpack/rpc/future.h>                                                          
 #include <exception>
 
@@ -69,40 +68,57 @@ namespace echo {
 
 	static ClientConfig global_client_config;
 
-	Client::Client() {
-	}
-
-	Client::~Client() {
-	}
-
 	bool Client::Init(const char * config_file) {
 		return global_client_config.Read(config_file);
 	}
 
-	int Client::echo(int shard_id, const echomsg & req, echomsg & res) {
-		//next: add different dist mode, e.g. consistent_hash
-		const Server_t * svr = global_client_config.GetByShard(shard_id);
+	Client::Client() : shard_id_(0), svr_(NULL), master_cli_(NULL), slave_cli_(NULL) {
+		this->build_client_();
+	}
 
-		if (svr) {
+	Client::Client(int shard_id) : shard_id_(shard_id), svr_(NULL), master_cli_(NULL), slave_cli_(NULL) {
+		this->build_client_();
+	}
+
+	Client::~Client() {
+		this->destroy_client_();
+	}
+
+	void Client::build_client_() {
+		this->svr_ = global_client_config.GetByShard(this->shard_id_);
+		if (this->svr_) {
+			this->master_cli_ = new msgpack::rpc::client(this->svr_->master.ip, this->svr_->master.port);
+			this->slave_cli_ = new msgpack::rpc::client(this->svr_->slave.ip, this->svr_->slave.port);
+		} else {
+			throw std::runtime_error("failed to GetByShard");
+		}
+	}
+
+	void Client::destroy_client_() {
+		this->master_cli_->close();
+		this->slave_cli_->close();
+		delete this->master_cli_;
+		delete this->slave_cli_;
+	}
+
+	int Client::echo(const echomsg & req, echomsg & res) {
+		//next: add different dist mode, e.g. consistent_hash
+
+		try {
+			msgpack::rpc::future callback = this->master_cli_->call("echo", req);
+			res = callback.get< echomsg >();
+		} catch (std::exception & e) {
+			log(LOG_ERR, "Client::%s master[%s:%d] %s", __func__, this->svr_->master.ip, this->svr_->master.port, e.what());
 			try {
-				msgpack::rpc::client msgpack_cli(svr->master.ip, svr->master.port);
-				msgpack::rpc::future callback = msgpack_cli.call("echo", req);
+				msgpack::rpc::future callback = this->slave_cli_->call("echo", req);
 				res = callback.get< echomsg >();
 			} catch (std::exception & e) {
-				log(LOG_ERR, "Client::%s master[%s:%d] %s", __func__, svr->master.ip, svr->master.port, e.what());
-				try {
-					msgpack::rpc::client msgpack_cli(svr->slave.ip, svr->slave.port);
-					msgpack::rpc::future callback = msgpack_cli.call("echo", req);
-					res = callback.get< echomsg >();
-				} catch (std::exception & e) {
-					log(LOG_ERR, "Client::%s slave[%s:%d] %s", __func__, svr->slave.ip, svr->slave.port, e.what());
-					return -1;
-				}
+				log(LOG_ERR, "Client::%s slave[%s:%d] %s", __func__, this->svr_->slave.ip, this->svr_->slave.port, e.what());
+				return -1;
 			}
-			return 0;
 		}
 
-		return -1;
+		return 0;
 	}
 
 }

@@ -29,7 +29,7 @@ DYNAMICLIBS = -lstdc++ -lpthread -lm
 ##### objs for compiling #####
 COM_OBJS = log_utils.o file_utils.o config.o opt_map.o
 CLI_OBJS = $(COM_OBJS) echo_rpc_cli.o
-SVR_OBJS = $(COM_OBJS) echo_rpc_handler.o echo_svr.o
+SVR_OBJS = $(COM_OBJS) echo_rpc_handler.o daemon.o echo_svr.o
 
 ##### target for compiling #####
 TARGETS = libecho_rpc_cli.a echo_rpc_test echo_svr

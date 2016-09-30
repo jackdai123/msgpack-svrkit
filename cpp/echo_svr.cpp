@@ -1,7 +1,10 @@
 #include "config.h"
 #include "log_utils.h"                                                                           
+#include "file_utils.h"
 #include "echo_svr.h"
 #include "echo_rpc_handler.h"
+#include "daemon.h"
+#include <sstream>
 
 namespace echo {
 
@@ -41,6 +44,10 @@ namespace echo {
 		return succ;
 	}
 
+	std::string ServerConfig :: GetPidFile() {
+		return this->pid_file_;
+	}
+
 	std::string ServerConfig :: GetIP() {
 		return this->ip_;
 	}
@@ -57,26 +64,40 @@ namespace echo {
 
 using namespace echo;
 
-void showUsage( const char * program ) {
-	printf( "Usage:\n          %s [-c <config>] [-h]\nExamples:\n", program );
-	printf( "          %s -c svr.conf\n", program );
+static void write_pid_file(const char * pid_file) {
+	std::stringstream ss;
+	std::string pid_str;
+	ss << getpid();
+	ss >> pid_str;
+	if ( ! FileUtils::WriteFile( pid_file, pid_str ) ) {
+		log(LOG_ERR, "%s failed to write pidfile %s", __func__, pid_file);
+		exit( 0 );
+	}
+}
 
+static void showUsage( const char * program ) {
+	printf( "Usage:\n          %s [-c <config>] [-d] [-h]\nExamples:\n", program );
+	printf( "          %s -c svr.conf -d\n", program );
 	exit( 0 );
 }
 
 int main( int argc, char * argv[] ) {
+	int c ;
 	const char * config_file = NULL;
 	extern char * optarg ;
-	int c ;
+	bool daemon_flag = false;
 
-	while( ( c = getopt( argc, argv, "c:h" ) ) != EOF ) {
+	while( ( c = getopt( argc, argv, "c:dh" ) ) != EOF ) {
 		switch ( c ) {
 			case 'c':
 				config_file = optarg;
 				break;
+			case 'd':
+				daemon_flag = true;
+				break;
 			case 'h':
 			default:
-				showUsage( argv[ 0 ] );
+				showUsage( argv[0] );
 				break;
 		}
 	}
@@ -94,15 +115,19 @@ int main( int argc, char * argv[] ) {
 		showUsage( argv[0] );
 	}
 
+	if (daemon_flag) {
+		daemon();
+	}
+
+	if (config.GetPidFile() != "") {
+		write_pid_file( config.GetPidFile().c_str() );
+	}
+
 	msgpack::rpc::server svr;
 	std::auto_ptr<msgpack::rpc::dispatcher> dp( new echo_rpc_handler );
 	svr.serve( dp.get() );
 	svr.listen( config.GetIP(), config.GetPort() );
-	svr.start( config.GetWorkerSum() );
+	svr.run( config.GetWorkerSum() );
 
-	printf("%s %d %d\n", config.GetIP().c_str(), config.GetPort(), config.GetWorkerSum());
-	while (1) {
-		sleep(1000);
-	}
 	return 0;
 }
