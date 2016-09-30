@@ -2,7 +2,7 @@
 
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
-NAME="echo"
+NAME="${app}"
 MAINPATH=$(cd "$(dirname "$0")"; pwd)
 SVRNAME=$MAINPATH/${NAME}_svr
 SVRCONF=$MAINPATH/${NAME}_svr.conf

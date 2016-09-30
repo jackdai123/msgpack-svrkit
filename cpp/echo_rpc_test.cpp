@@ -34,13 +34,11 @@ namespace echo {
 		req.vec_string.push_back("yuki");
 
 		Client cli;
-		for (int i = 0; i < 1000000; i++) {
-			int ret = cli.echo( req, res );
-			//printf( "%s return %d\n", __func__, ret );
-			//printf( "res: %s [%d, %d] [\'%s\', \'%s\']\n", res.my_string.c_str(),
-			//		res.vec_int[0], res.vec_int[1],
-			//		res.vec_string[0].c_str(), res.vec_string[1].c_str() );
-		}
+		int ret = cli.echo( req, res );
+		printf( "%s return %d\n", __func__, ret );
+		printf( "res: %s [%d, %d] [\'%s\', \'%s\']\n", res.my_string.c_str(),
+				res.vec_int[0], res.vec_int[1],
+				res.vec_string[0].c_str(), res.vec_string[1].c_str() );
 
 		return 0;
 	}
@@ -51,7 +49,13 @@ using namespace echo;
 
 void showUsage( const char * program )
 {
-	printf( "Usage:\n          %s [-c <config>] [-f <func>] [-h]\nExamples:\n", program );
+	printf( "Usage:\n" );
+	printf( "          %s [-c <config>] [-f <func>] [-h]\n", program );
+	printf( "Options:\n" );
+	printf( "          -c\tconfigure file of client\n" );
+	printf( "          -f\trpc method or function\n" );
+	printf( "          -h\tshow help\n" );
+	printf( "Examples:\n");
 
 	TestTool::Name2Func_t * name2func = TestTool::GetName2Func();
 

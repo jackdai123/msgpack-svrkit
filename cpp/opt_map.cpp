@@ -5,7 +5,7 @@
 
 #include "opt_map.h"
 
-namespace echo {
+namespace ${app} {
 
 	OptMap::OptMap(const char * optstring) {
 		opt_string_ = strdup(optstring);

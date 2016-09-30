@@ -9,7 +9,7 @@
 #include "config.h"
 #include "file_utils.h"
 
-namespace echo {
+namespace ${app} {
 
 	Config :: Config() {
 	}

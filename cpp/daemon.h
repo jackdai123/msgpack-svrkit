@@ -1,6 +1,6 @@
 #pragma once
 
-namespace echo {
+namespace ${app} {
 
 	int daemon();
 

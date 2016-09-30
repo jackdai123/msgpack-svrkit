@@ -10,7 +10,7 @@
 #include "file_utils.h"
 #include "log_utils.h"
 
-namespace echo {
+namespace ${app} {
 
 	bool FileUtils::ReadFile(const char * path, std::string * content) {
 		bool ret = false;

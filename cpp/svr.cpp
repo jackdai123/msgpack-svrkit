@@ -1,12 +1,12 @@
 #include "config.h"
 #include "log_utils.h"                                                                           
 #include "file_utils.h"
-#include "echo_svr.h"
-#include "echo_rpc_handler.h"
+#include "${app}_svr.h"
+#include "${app}_rpc_handler.h"
 #include "daemon.h"
 #include <sstream>
 
-namespace echo {
+namespace ${app} {
 
 	ServerConfig :: ServerConfig() {
 		memset(this->app_name_, 0, sizeof(this->app_name_));
@@ -62,7 +62,7 @@ namespace echo {
 
 }
 
-using namespace echo;
+using namespace ${app};
 
 static void write_pid_file(const char * pid_file) {
 	std::stringstream ss;
@@ -76,7 +76,13 @@ static void write_pid_file(const char * pid_file) {
 }
 
 static void showUsage( const char * program ) {
-	printf( "Usage:\n          %s [-c <config>] [-d] [-h]\nExamples:\n", program );
+	printf( "Usage:\n" );
+	printf( "          %s [-c <config>] [-d] [-h]\n", program );
+	printf( "Options:\n" );
+	printf( "          -c\tconfigure file of server\n" );
+	printf( "          -d\trun as daemon\n" );
+	printf( "          -h\tshow help\n" );
+	printf( "Examples:\n" );
 	printf( "          %s -c svr.conf -d\n", program );
 	exit( 0 );
 }
@@ -124,7 +130,7 @@ int main( int argc, char * argv[] ) {
 	}
 
 	msgpack::rpc::server svr;
-	std::auto_ptr<msgpack::rpc::dispatcher> dp( new echo_rpc_handler );
+	std::auto_ptr<msgpack::rpc::dispatcher> dp( new ${app}_rpc_handler );
 	svr.serve( dp.get() );
 	svr.listen( config.GetIP(), config.GetPort() );
 	svr.run( config.GetWorkerSum() );

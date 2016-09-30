@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <syslog.h>
 
-namespace echo {
+namespace ${app} {
 
 	extern void log(int priority, const char * format, ...) __attribute__((format(printf, 2, 3)));
 

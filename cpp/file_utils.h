@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace echo {
+namespace ${app} {
 
 	class FileUtils {
 		public:

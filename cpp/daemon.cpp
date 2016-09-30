@@ -42,7 +42,7 @@ static int do_fork()
 	return status;
 }
 
-namespace echo {
+namespace ${app} {
 
 	int daemon() {
 		int status = 0;

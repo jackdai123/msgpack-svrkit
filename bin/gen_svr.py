@@ -7,7 +7,7 @@ import json
 import getopt
 import traceback
 from gen_python import GenPythonCode
-#import gen_cpp
+from gen_cpp import GenCppCode
 #import gen_java
 
 class GenCode:
@@ -81,22 +81,22 @@ class GenCode:
 		for lang in self.langs:
 			if lang == 'python':
 				GenPythonCode(self.jsondata, os.path.join(self.svrkitpath, 'python'), os.path.join(self.codepath, 'python'))
-			#elif lang == 'cpp':
-			#	gen_cpp.gencode()
+			elif lang == 'cpp':
+				GenCppCode(self.jsondata, os.path.join(self.svrkitpath, 'cpp'), os.path.join(self.codepath, 'cpp'))
 			#elif lang == 'java':
 			#	gen_cpp.gencode()
 
 	def print_usage(self, argv):
 		print 'Usage:'
-		print '\t%s -f /path/to/svr.json -g lang1,lang2,lang3 -d .' % (argv[0])
+		print '          %s -f /path/to/svr.json -g lang1,lang2,lang3 -d .' % (argv[0])
 		print 'Options:'
-		print '\t-f\tsvr description file'
-		print '\t-g\tlanguages(cpp,python,java) for generate'
-		print '\t-d\tdirectory of svr code'
-		print '\t-h\tshow help'
+		print '          -f\tsvr description file'
+		print '          -g\tlanguages(cpp,python,java) for generate'
+		print '          -d\tdirectory of svr code'
+		print '          -h\tshow help'
 		print 'Examples:'
-		print '\t%s -f /path/to/svr.json -g python -d .' % (argv[0])
-		print '\t%s -f /path/to/svr.json -g python,cpp,java -d .' % (argv[0])
+		print '          %s -f /path/to/svr.json -g python -d .' % (argv[0])
+		print '          %s -f /path/to/svr.json -g python,cpp,java -d .' % (argv[0])
 
 if __name__ == '__main__':
 	GenCode(sys.argv)

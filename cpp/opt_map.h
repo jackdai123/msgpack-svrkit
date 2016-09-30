@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-namespace echo {
+namespace ${app} {
 
 	class OptMap {
 		public:

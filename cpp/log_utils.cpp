@@ -2,7 +2,7 @@
 
 #include <syslog.h>
 
-namespace echo {
+namespace ${app} {
 
 	static vlog_t global_vlog = vsyslog;
 
