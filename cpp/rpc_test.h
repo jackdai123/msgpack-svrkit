@@ -11,7 +11,6 @@ namespace ${app} {
 
 		public:
 ${api}
-
 		public:
 			typedef int (TestTool::*ToolFunc_t) ( OptMap & );
 

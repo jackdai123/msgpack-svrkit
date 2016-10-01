@@ -4,7 +4,7 @@
 #include <jubatus/msgpack/rpc/future.h>
 #include <exception>
 
-namespace ${app}{
+namespace ${app} {
 
 	ClientConfig::ClientConfig() {
 	}

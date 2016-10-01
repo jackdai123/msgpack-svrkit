@@ -36,7 +36,7 @@ def replace_content(src_file, dest_file, tag, tag_content):
 		print traceback.format_exc()
 		sys.exit()
 
-class GenPythonCode:
+class GenCppCode:
 	def __init__(self, json, tpl, code):
 		self.jsondata = json
 		self.tplpath = tpl
@@ -67,7 +67,7 @@ class GenPythonCode:
 			for field in proto['fields']:
 				if field['type'] not in ['int','float','bool','string','list','dict']:
 					raise TypeError('proto:%s field:%s type is not [\'int\',\'float\',\'bool\',\'string\',\'list\',\'dict\']' % (proto['name'], field['name']))
-				if field['subtype'] not in ['int','float','bool','string']:
+				if 'subtype' in field and field['subtype'] not in ['int','float','bool','string']:
 					raise TypeError('proto:%s field:%s type is not [\'int\',\'float\',\'bool\',\'string\']' % (proto['name'], field['name']))
 
 		for api in self.jsondata['rpc_server']['apis']:
@@ -278,7 +278,7 @@ class GenPythonCode:
 				content += '%s' % (api['res_proto'])
 			content += ' >();\n\t\t\t} catch (std::exception & e) {\n'
 			content += '\t\t\t\tlog(LOG_ERR, \"Client::%s slave[%s:%d] %s\", __func__, this->svr_->slave.ip, this->svr_->slave.port, e.what());\n'
-			content += '\t\t\t\treturn -1;\n\t\t\t}\n\t\t}\n\n\t\treturn 0;\n\t}\n'
+			content += '\t\t\t\treturn -1;\n\t\t\t}\n\t\t}\n\n\t\treturn 0;\n\t}\n\n'
 		return content
 
 	def gen_rpc_handler(self):
@@ -330,7 +330,7 @@ class GenPythonCode:
 	def gen_rpc_handler_dispatch_code(self):
 		content = ''
 		for i in xrange(len(self.jsondata['rpc_server']['apis'])):
-			api = self.jsondata['rpc_server']['apis']
+			api = self.jsondata['rpc_server']['apis'][i]
 			if i != 0:
 				content += '\t\t\t} else '
 			content += 'if (method == \"%s\") {\n' % (api['name'])
@@ -347,9 +347,9 @@ class GenPythonCode:
 	def gen_rpc_handler_cpp_code(self):
 		content = ''
 		for api in self.jsondata['rpc_server']['apis']:
-			content += '\t void %s_rpc_handler :: %s( msgpack_stream stream' % (self.jsondata['app'], api['name'])
+			content += '\tvoid %s_rpc_handler :: %s( msgpack_stream stream' % (self.jsondata['app'], api['name'])
 			if 'req_proto' in api:
-				content += ', const %s & req'
+				content += ', const %s & req' % (api['req_proto'])
 			content += ' ) {\n\t\t//add logic code\n\n'
 			if 'res_proto' in api:
 				content += '\t\t//return response\n'
@@ -367,8 +367,9 @@ class GenPythonCode:
 		for proto in self.jsondata['protos']:
 			for field in proto['fields']:
 				field_types[field['type']] = 1
-				for subtype in field['subtype'].split(':'):
-					field_types[subtype] = 1
+				if 'subtype' in field:
+					for subtype in field['subtype'].split(':'):
+						field_types[subtype] = 1
 
 		for t in field_types:
 			if t == 'string':
@@ -422,7 +423,7 @@ class GenPythonCode:
 		arg_content = ''
 		for api in self.jsondata['rpc_server']['apis']:
 			api_content += '\t\t\tvirtual int %s( OptMap & bigmap );\n' % (api['name'])
-			arg_content += '\t\t\t\t\t{ \"%s\", &TestTool::%s, \"c:f:h\" },' % (api['name'], api['name'])
+			arg_content += '\t\t\t\t\t{ \"%s\", &TestTool::%s, \"c:f:h\" },\n' % (api['name'], api['name'])
 
 		content = content.replace('${app}', self.jsondata['app'])
 		content = content.replace('${api}', api_content)
@@ -463,8 +464,8 @@ class GenPythonCode:
 					func_content += ', '
 				func_content += 'res'
 			func_content += ' );\n'
-			func_content += 'printf( \"%%s return %%d\\n\", __func__, ret );\n\n'
-			func_content += '\t\treturn 0;\n\t}\n\n'
+			func_content += '\t\tprintf( \"%s return %d\\n\", __func__, ret );\n\n'
+			func_content += '\t\treturn 0;\n\t}\n'
 
 		content = content.replace('${app}', self.jsondata['app'])
 		content = content.replace('${api}', api_content)

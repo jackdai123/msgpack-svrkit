@@ -28,22 +28,22 @@ DYNAMICLIBS = -lstdc++ -lpthread -lm
 
 ##### objs for compiling #####
 COM_OBJS = log_utils.o file_utils.o config.o opt_map.o
-CLI_OBJS = $(COM_OBJS) {app}_rpc_cli.o
-SVR_OBJS = $(COM_OBJS) {app}_rpc_handler.o daemon.o {app}_svr.o
+CLI_OBJS = $(COM_OBJS) ${app}_rpc_cli.o
+SVR_OBJS = $(COM_OBJS) ${app}_rpc_handler.o daemon.o ${app}_svr.o
 
 ##### target for compiling #####
-TARGETS = lib{app}_rpc_cli.a {app}_rpc_test {app}_svr
+TARGETS = lib${app}_rpc_cli.a ${app}_rpc_test ${app}_svr
 
 ##### make targets #####
 all: $(TARGETS)
 
-lib{app}_rpc_cli.a: $(CLI_OBJS)
+lib${app}_rpc_cli.a: $(CLI_OBJS)
 	$(AR) $@ $^
 
-{app}_rpc_test: {app}_rpc_test.o lib{app}_rpc_cli.a
-	$(LINKER) $^ $(STATICFLAGS) -L. -l{app}_rpc_cli $(STATICLIBS) $(DYNAMICFLAGS) $(DYNAMICLIBS) -o $@
+${app}_rpc_test: ${app}_rpc_test.o lib${app}_rpc_cli.a
+	$(LINKER) $^ $(STATICFLAGS) -L. -l${app}_rpc_cli $(STATICLIBS) $(DYNAMICFLAGS) $(DYNAMICLIBS) -o $@
 
-{app}_svr: $(SVR_OBJS)
+${app}_svr: $(SVR_OBJS)
 	$(LINKER) $^ $(STATICFLAGS) $(STATICLIBS) $(DYNAMICFLAGS) $(DYNAMICLIBS) -o $@
 
 clean:
