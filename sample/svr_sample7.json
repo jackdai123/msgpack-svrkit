@@ -11,11 +11,15 @@
 			"type": "list",
 			"subtype": "int"
 		},{
-			"name": "vec_string",
-			"type": "list",
-			"subtype": "string"
+			"name": "dict_string",
+			"type": "dict",
+			"subtype": "int:string"
 		}]
 	}],
+
+	"rpc_client": {
+		"mode": "sharding"
+	},
 
 	"rpc_server": {
 		"ip": "0.0.0.0",
@@ -23,9 +27,17 @@
 		"worker_type": "thread",
 		"worker_sum": 4,
 		"apis": [{
-			"name": "echo",
+			"name": "echo1",
 			"req_proto": "echomsg",
 			"res_proto": "echomsg"
+		},{
+			"name": "echo2",
+			"res_proto": "echomsg"
+		},{
+			"name": "echo3"
+		},{
+			"name": "echo4",
+			"req_proto": "echomsg"
 		}]
 	}
 }

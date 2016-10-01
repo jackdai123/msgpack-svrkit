@@ -67,13 +67,15 @@ class GenCppCode:
 			for field in proto['fields']:
 				if field['type'] not in ['int','float','bool','string','list','dict']:
 					raise TypeError('proto:%s field:%s type is not [\'int\',\'float\',\'bool\',\'string\',\'list\',\'dict\']' % (proto['name'], field['name']))
-				if 'subtype' in field and field['subtype'] not in ['int','float','bool','string']:
-					raise TypeError('proto:%s field:%s type is not [\'int\',\'float\',\'bool\',\'string\']' % (proto['name'], field['name']))
+				if 'subtype' in field:
+					for subtype in field['subtype'].split(':'):
+						if subtype not in ['int','float','bool','string']:
+							raise TypeError('proto:%s field:%s subtype is not [\'int\',\'float\',\'bool\',\'string\']' % (proto['name'], field['name']))
 
 		for api in self.jsondata['rpc_server']['apis']:
-			if not self.check_proto(api['req_proto']):
+			if 'req_proto' in api and not self.check_proto(api['req_proto']):
 				raise TypeError('req_proto:%s is not supported' % (api['req_proto']))
-			if not self.check_proto(api['res_proto']):
+			if 'res_proto' in api and not self.check_proto(api['res_proto']):
 				raise TypeError('res_proto:%s is not supported' % (api['res_proto']))
 
 	def check_proto(self, proto_name):
