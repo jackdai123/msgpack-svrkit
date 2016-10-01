@@ -172,13 +172,9 @@ class GenPythonCode:
 				self.jsondata['app'])
 
 	def gen_rpc_cli(self):
-		try:
-			self.gen_cliconf_file(self.codepath)
-			self.gen_rpc_cli_head_file(self.codepath)
-			self.gen_rpc_cli_cpp_file(self.codepath)
-		except Exception,e:
-			print traceback.format_exc()
-			sys.exit()
+		self.gen_cliconf_file(self.codepath)
+		self.gen_rpc_cli_head_file(self.codepath)
+		self.gen_rpc_cli_cpp_file(self.codepath)
 
 	def gen_cliconf_file(self, rpc_cli_dir):
 		try:
@@ -209,7 +205,14 @@ class GenPythonCode:
 	def gen_rpc_cli_head_code(self):
 		content = '\t\tpublic:\n'
 		for api in self.jsondata['rpc_server']['apis']:
-			content += '\t\t\tint %s(const %s & req, %s & res);\n' % (api['name'], api['req_proto'], api['res_proto'])
+			content += '\t\t\tint %s(' % (api['name'])
+			if 'req_proto' in api:
+				content += 'const %s & req' % (api['req_proto'])
+			if 'res_proto' in api:
+				if 'req_proto' in api:
+					content += ', '
+				content += '%s & res' % (api['res_proto'])
+			content += ');\n'
 		content += '\t};\n\n}'
 		return content
 
@@ -230,87 +233,119 @@ class GenPythonCode:
 			sys.exit()
 
 	def gen_rpc_cli_cpp_code(self):
-		try:
-			fp = open(os.path.join(self.tplpath, 'rpc_api.cpp'), 'r')
-			api_content = fp.read()
-			fp.close()
-		except Exception,e:
-			print traceback.format_exc()
-			sys.exit()
-
 		content = ''
 		for api in self.jsondata['rpc_server']['apis']:
-			tmp_api_content = api_content
-			tmp_api_content = tmp_api_content.replace('${api}', api['name'])
-			tmp_api_content = tmp_api_content.replace('${req_proto}', api['req_proto'])
-			tmp_api_content = tmp_api_content.replace('${res_proto}', api['res_proto'])
-			content += tmp_api_content;
-
+			content += '\tint Client::%s(' % (api['name'])
+			if 'req_proto' in api:
+				content += 'const %s & req' % (api['req_proto'])
+			if 'res_proto' in api:
+				if 'req_proto' in api:
+					content += ', '
+				content += '%s & res' % (api['res_proto'])
+			content += ') {\n\t\ttry {\n\t\t\tmsgpack::rpc::future callback = this->master_cli_->call(\"%s\"' % (api['name'])
+			if 'req_proto' in api:
+				content += ', req'
+			content += ');\n\t\t\t'
+			if 'res_proto' in api:
+				content += 'res = '
+			content += 'callback.get< '
+			if 'res_proto' in api:
+				content += '%s' % (api['res_proto'])
+			content += ' >();\n\t\t} catch (std::exception & e) {\n'
+			content += '\t\t\tlog(LOG_ERR, \"Client::%s master[%s:%d] %s\", __func__, this->svr_->master.ip, this->svr_->master.port, e.what());\n'
+			content += '\t\t\ttry {\n\t\t\t\tmsgpack::rpc::future callback = this->slave_cli_->call(\"%s\"' % (api['name'])
+			if 'req_proto' in api:
+				content += ', req'
+			content += ');\n\t\t\t\t'
+			if 'res_proto' in api:
+				content += 'res = '
+			content += 'callback.get< '
+			if 'res_proto' in api:
+				content += '%s' % (api['res_proto'])
+			content += ' >();\n\t\t\t} catch (std::exception & e) {\n'
+			content += '\t\t\t\tlog(LOG_ERR, \"Client::%s slave[%s:%d] %s\", __func__, this->svr_->slave.ip, this->svr_->slave.port, e.what());\n'
+			content += '\t\t\t\treturn -1;\n\t\t\t}\n\t\t}\n\n\t\treturn 0;\n\t}\n'
 		return content
 
-			
-
 	def gen_rpc_handler(self):
-		rpc_handler_dir = os.path.join(self.codepath, 'rpc_handler')
-		if os.path.exists(rpc_handler_dir):
-			shutil.rmtree(rpc_handler_dir)
-		os.mkdir(rpc_handler_dir)
+		self.gen_rpc_handler_head_file(self.codepath)
+		self.gen_rpc_handler_cpp_file(self.codepath)
 
+	def gen_rpc_handler_head_file(self, rpc_cli_dir):
+		content = ''
 		try:
-			fp = open(os.path.join(self.tplpath, 'rpc_handler_init.py'), 'r')
-			content = fp.read()
-			fp.close()
-			for api in self.jsondata['rpc_server']['apis']:
-				content += '\tdef %s(self' % (api['name'])
-				if 'req_proto' in api:
-					content += ', req'
-				content += '):\n\t\tres = self.rpc_worker_pool.apply_async(self.func_map[\'%s\'].%s' % (api['name'], api['name'])
-				if 'req_proto' in api:
-					content += ', (req,)'
-				content += ')\n\t\treturn res.get()\n\n'
-			fp = open(os.path.join(rpc_handler_dir, '__init__.py'), 'w')
-			fp.write(content)
-			fp.close()
-
-			fp = open(os.path.join(self.tplpath, 'rpc_handler_app.py'), 'r')
-			content = fp.read()
+			fp = open(os.path.join(self.tplpath, 'rpc_handler.h'), 'r')
+			content += fp.read()
 			fp.close()
 			content = content.replace('${app}', self.jsondata['app'])
-			for api in self.jsondata['rpc_server']['apis']:
-				if 'req_proto' in api:
-					content += '\t#@req : %s\n' % (api['req_proto'])
-				if 'res_proto' in api:
-					content += '\t#@res : %s\n' % (api['res_proto'])
-				content += '\tdef %s(self' % (api['name'])
-				if 'req_proto' in api:
-					content += ', m'
-				content += '):\n'
-				if 'req_proto' in api:
-					for proto in self.jsondata['protos']:
-						if proto['name'] == api['req_proto']:
-							content += '\t\treq = self.rpc_proto.%s()\n' % (api['req_proto'])
-							content += '\t\treq.from_msgpack(m)\n\n'
-							break
-					else:
-						content += '\t\treq = m\n\n'
-				content += '\t\t########add logic code here########\n\n'
-				content += '\t\t########end logic code########\n\n'
-				if 'res_proto' in api:
-					for proto in self.jsondata['protos']:
-						if proto['name'] == api['res_proto']:
-							content += '\t\tres = self.rpc_proto.%s()\n' % (api['res_proto'])
-							break
-					else:
-						content += '\t\tres = %s\n' % (get_init_value(api['res_proto']))
-					content += '\t\treturn res\n\n'
-				else:
-					content += '\t\treturn None\n\n'
-			fp = open(os.path.join(rpc_handler_dir, '%s_rpc_handler.py' % (self.jsondata['app'])), 'w')
+			content += self.gen_rpc_handler_head_code()
+			fp = open(os.path.join(rpc_cli_dir, self.jsondata['app'] + '_rpc_handler.h'), 'w')
 			fp.write(content)
 			fp.close()
 		except Exception,e:
 			print traceback.format_exc()
 			sys.exit()
+
+	def gen_rpc_handler_head_code(self):
+		content = '\t\tpublic:\n'
+		for api in self.jsondata['rpc_server']['apis']:
+			content += '\t\t\tvoid %s( msgpack_stream stream' % (api['name'])
+			if 'req_proto' in api:
+				content += ', const %s & req' % (api['req_proto'])
+			content += ' );\n'
+		content += '\t};\n\n}'
+		return content
+
+	def gen_rpc_handler_cpp_file(self, rpc_cli_dir):
+		content = ''
+		try:
+			fp = open(os.path.join(self.tplpath, 'rpc_handler.cpp'), 'r')
+			content += fp.read()
+			fp.close()
+			content = content.replace('${app}', self.jsondata['app'])
+			content = content.replace('${dispath_code}', self.gen_rpc_handler_dispatch_code())
+			content += self.gen_rpc_handler_cpp_code()
+			content += '}'
+			fp = open(os.path.join(rpc_cli_dir, self.jsondata['app'] + '_rpc_handler.cpp'), 'w')
+			fp.write(content)
+			fp.close()
+		except Exception,e:
+			print traceback.format_exc()
+			sys.exit()
+
+	def gen_rpc_handler_dispatch_code(self):
+		content = ''
+		for i in xrange(len(self.jsondata['rpc_server']['apis'])):
+			api = self.jsondata['rpc_server']['apis']
+			if i != 0:
+				content += '\t\t\t} else '
+			content += 'if (method == \"%s\") {\n' % (api['name'])
+			if 'req_proto' in api:
+				content += '\t\t\t\tmsgpack::type::tuple< %s > req;\n' % (api['req_proto'])
+				content += '\t\t\t\tstream.params().convert(&req);\n'
+			content += '\t\t\t\tthis->%s( stream' % (api['name'])
+			if 'req_proto' in api:
+				content += ', req.get<0>() );\n'
+			else:
+				content += ' );\n'
+		return content
+
+	def gen_rpc_handler_cpp_code(self):
+		content = ''
+		for api in self.jsondata['rpc_server']['apis']:
+			content += '\t void %s_rpc_handler :: %s( msgpack_stream stream' % (self.jsondata['app'], api['name'])
+			if 'req_proto' in api:
+				content += ', const %s & req'
+			content += ' ) {\n\t\t//add logic code\n\n'
+			if 'res_proto' in api:
+				content += '\t\t//return response\n'
+				content += '\t\t%s res;\n' % (api['res_proto'])
+				content += '\t\tstream.result(res);\n'
+			content += '\t}\n\n'
+		return content
+
+
+
 
 	def gen_rpc_init(self):
 		rpc_init_dir = os.path.join(self.codepath, 'rpc_init')
