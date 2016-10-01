@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "echo_rpc_test.h"
-#include "echo_rpc_cli.h"
+#include "${app}_rpc_test.h"
+#include "${app}_rpc_cli.h"
 
-namespace echo {
+namespace ${app} {
 
 	TestTool :: TestTool() {
 	}
@@ -10,42 +10,17 @@ namespace echo {
 	TestTool :: ~TestTool() {
 	}
 
-	int TestTool :: echo( OptMap & /* opt_map */ ) {
-		printf( "\n    *** echo unimplement ***\n" );
-		return -1;
-	}
-
+${api}
 	TestToolImpl:: TestToolImpl() {
 	}
 
 	TestToolImpl:: ~TestToolImpl() {
 	}
 
-	int TestToolImpl :: echo( OptMap & opt_map ) {
-		echomsg req;
-		echomsg res;
-
-		if( NULL == opt_map.Get( 's' ) ) return -1;
-
-		req.my_string = opt_map.Get( 's' ); 
-		req.vec_int.push_back(1);
-		req.vec_int.push_back(3);
-		req.vec_string.push_back("david");
-		req.vec_string.push_back("yuki");
-
-		Client cli;
-		int ret = cli.echo( req, res );
-		printf( "%s return %d\n", __func__, ret );
-		printf( "res: %s [%d, %d] [\'%s\', \'%s\']\n", res.my_string.c_str(),
-				res.vec_int[0], res.vec_int[1],
-				res.vec_string[0].c_str(), res.vec_string[1].c_str() );
-
-		return 0;
-	}
-
+${func}
 }
 
-using namespace echo;
+using namespace ${app};
 
 void showUsage( const char * program )
 {

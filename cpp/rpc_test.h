@@ -2,16 +2,15 @@
 
 #include "opt_map.h"
 
-namespace echo {
+namespace ${app} {
 
-	class TestTool
-	{
+	class TestTool {
 		public:
 			TestTool();
 			virtual ~TestTool();
 
 		public:
-			virtual int echo( OptMap & bigmap );
+${api}
 
 		public:
 			typedef int (TestTool::*ToolFunc_t) ( OptMap & );
@@ -26,8 +25,7 @@ namespace echo {
 			static Name2Func_t * GetName2Func()
 			{
 				static Name2Func_t name2func [] = {
-					{ "echo", &TestTool::echo, "c:f:hs:",
-						"-s <string>" },
+${arg}
 					{ NULL, NULL }
 				};
 
@@ -36,14 +34,13 @@ namespace echo {
 	};
 
 
-	class TestToolImpl : public TestTool
-	{
+	class TestToolImpl : public TestTool {
 		public:
 			TestToolImpl();
 			virtual ~TestToolImpl();
 
 		public:
-			virtual int echo( OptMap & opt_map );
+${api}
 	};
 
 }

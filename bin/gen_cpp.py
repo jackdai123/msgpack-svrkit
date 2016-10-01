@@ -7,20 +7,16 @@ import stat
 import shutil
 import traceback
 
-def get_init_value(data_type):
+def get_type_name(data_type):
+	if data_type in ['bool','int','float']:
+		return data_type
 	if data_type == 'string':
-		return '\'\''
-	if data_type == 'bool':
-		return 'False';
-	if data_type in ['int', 'float']:
-		return '0'
+		return 'std::string'
 	if data_type == 'list':
-		return '[]'
-	if data_type == 'tuple':
-		return '()'
+		return 'std::vector'
 	if data_type == 'dict':
-		return '{}'
-	return 'None'
+		return 'std::map'
+	return ''
 
 def replace_content(src_file, dest_file, tag, tag_content):
 	content = ''
@@ -58,7 +54,6 @@ class GenPythonCode:
 		if 'rpc_server' in self.jsondata:
 			self.gen_rpc_cli()
 			self.gen_rpc_handler()
-			self.gen_rpc_init()
 			self.gen_rpc_proto()
 			self.gen_rpc_test()
 
@@ -67,6 +62,25 @@ class GenPythonCode:
 			raise IOError('%s is not exists' % (self.tplpath))
 		if not os.path.exists(self.codepath):
 			os.mkdir(self.codepath)
+
+		for proto in self.jsondata['protos']:
+			for field in proto['fields']:
+				if field['type'] not in ['int','float','bool','string','list','dict']:
+					raise TypeError('proto:%s field:%s type is not [\'int\',\'float\',\'bool\',\'string\',\'list\',\'dict\']' % (proto['name'], field['name']))
+				if field['subtype'] not in ['int','float','bool','string']:
+					raise TypeError('proto:%s field:%s type is not [\'int\',\'float\',\'bool\',\'string\']' % (proto['name'], field['name']))
+
+		for api in self.jsondata['rpc_server']['apis']:
+			if not self.check_proto(api['req_proto']):
+				raise TypeError('req_proto:%s is not supported' % (api['req_proto']))
+			if not self.check_proto(api['res_proto']):
+				raise TypeError('res_proto:%s is not supported' % (api['res_proto']))
+
+	def check_proto(self, proto_name):
+		for proto in self.jsondata['protos']:
+			if proto['name'] == proto_name:
+				return True;
+		return False
 
 	def gen_make_file(self):
 		replace_content(
@@ -344,103 +358,120 @@ class GenPythonCode:
 			content += '\t}\n\n'
 		return content
 
-
-
-
-	def gen_rpc_init(self):
-		rpc_init_dir = os.path.join(self.codepath, 'rpc_init')
-		if os.path.exists(rpc_init_dir):
-			shutil.rmtree(rpc_init_dir)
-		os.mkdir(rpc_init_dir)
-
-		try:
-			shutil.copy(os.path.join(self.tplpath, 'rpc_init_init.py'),
-					os.path.join(rpc_init_dir, '__init__.py'))
-			shutil.copy(os.path.join(self.tplpath, 'rpc_init_app.py'),
-					os.path.join(rpc_init_dir, '%s_rpc_init.py' % (self.jsondata['app'])))
-		except Exception,e:
-			print traceback.format_exc()
-			sys.exit()
-
 	def gen_rpc_proto(self):
-		rpc_proto_dir = os.path.join(self.codepath, 'rpc_proto')
-		if os.path.exists(rpc_proto_dir):
-			shutil.rmtree(rpc_proto_dir)
-		os.mkdir(rpc_proto_dir)
+		if 'protos' not in self.jsondata:
+			return
+
+		field_types = {}
+		content = '#pragma once\n\n'
+		for proto in self.jsondata['protos']:
+			for field in proto['fields']:
+				field_types[field['type']] = 1
+				for subtype in field['subtype'].split(':'):
+					field_types[subtype] = 1
+
+		for t in field_types:
+			if t == 'string':
+				content += '#include <string>\n'
+			elif t == 'list':
+				content += '#include <vector>\n'
+			elif t == 'dict':
+				content += '#include <map>\n'
+		content += '#include <msgpack.hpp>\n\n'
+		content += 'namespace %s {\n\n' % (self.jsondata['app'])
+
+		for proto in self.jsondata['protos']:
+			content += '\tclass %s {\n\t\tpublic:\n' % (proto['name'])
+			for field in proto['fields']:
+				if field['type'] in ['bool','int','float','string']:
+					content += '\t\t\t%s %s;\n' % (get_type_name(field['type']), field['name'])
+				elif field['type'] == 'list':
+					content += '\t\t\t%s<%s> %s;\n' % (get_type_name(field['type']), get_type_name(field['subtype']), field['name'])
+				elif field['type'] == 'dict':
+					content += '\t\t\t%s<%s,%s> %s;\n' % (get_type_name(field['type']), get_type_name(field['subtype'].split(':')[0]), get_type_name(field['subtype'].split(':')[1]), field['name'])
+			content += '\n\t\tpublic:\n\t\t\tMSGPACK_DEFINE('
+			for i in xrange(len(proto['fields'])):
+				if i != 0:
+					content += ', '
+				content += proto['fields'][i]['name']
+			content += ');\n\t};\n\n'
+		content += '}'
 
 		try:
-			shutil.copy(os.path.join(self.tplpath, '__init__.py'),
-					os.path.join(rpc_proto_dir, '__init__.py'))
-			self.gen_proto_file(rpc_proto_dir)
-		except Exception,e:
-			print traceback.format_exc()
-			sys.exit()
-
-	def gen_proto_file(self, rpc_proto_dir):
-		if 'protos' in self.jsondata:
-			content = '#!/usr/bin/env python\n#-*- coding: utf-8 -*-\n\n'
-			for proto in self.jsondata['protos']:
-				content += 'class %s(object):\n\tdef __init__(self):\n' % (proto['name'])
-				for field in proto['fields']:
-					content += '\t\tself.%s = %s\n' % (field['name'], get_init_value(field['type']))
-				content += '\n\tdef to_msgpack(self):\n\t\treturn [\n'
-				for field in proto['fields']:
-					content += '\t\t\tself.%s,\n' % (field['name'])
-				content += '\t\t]\n\n\tdef from_msgpack(self, msg):\n'
-				index = 0
-				for field in proto['fields']:
-					content += '\t\tself.%s = msg[%d]\n' % (field['name'], index)
-					index += 1
-				content += '\n'
-
-			try:
-				fp = open(os.path.join(rpc_proto_dir, self.jsondata['app'] + '_rpc_proto.py'), 'w')
-				fp.write(content)
-				fp.close()
-			except Exception,e:
-				print traceback.format_exc()
-				sys.exit()
-
-	def gen_rpc_test(self):
-		rpc_test_dir = os.path.join(self.codepath, 'rpc_test')
-		if os.path.exists(rpc_test_dir):
-			shutil.rmtree(rpc_test_dir)
-		os.mkdir(rpc_test_dir)
-
-		try:
-			shutil.copy(os.path.join(self.tplpath, '__init__.py'),
-					os.path.join(rpc_test_dir, '__init__.py'))
-			self.gen_test_file(rpc_test_dir)
-		except Exception,e:
-			print traceback.format_exc()
-			sys.exit()
-
-	def gen_test_file(self, rpc_test_dir):
-		content = ''
-		try:
-			fp = open(os.path.join(self.tplpath, 'rpc_test_app.py'), 'r')
-			content += fp.read()
+			fp = open(os.path.join(self.codepath, self.jsondata['app'] + '_rpc_proto.h'), 'w')
+			fp.write(content)
 			fp.close()
 		except Exception,e:
 			print traceback.format_exc()
 			sys.exit()
-		
-		content += '\tdef run(self):\n'
-		for api in self.jsondata['rpc_server']['apis']:
-			content += '\t\tself.test_%s()\n' % (api['name'])
-		content += '\n'
 
-		for api in self.jsondata['rpc_server']['apis']:
-			content += '\tdef test_%s(self):\n' % (api['name'])
-			content += '\t\tret = self.cli.%s(' % (api['name'])
-			for arg in api['args']:
-				content += get_init_value(arg['type']) + ','
-			content += ')\n\t\tprint \'%s ret %%s\' %% (ret)\n\n' % (api['name'])
+	def gen_rpc_test(self):
+		self.gen_rpc_test_head_file(self.codepath)
+		self.gen_rpc_test_cpp_file(self.codepath)
 
-		content += 'if __name__ == \'__main__\':\n\tRPCTest().run()\n\n'
+	def gen_rpc_test_head_file(self, rpc_test_dir):
+		try:
+			fp = open(os.path.join(self.tplpath, 'rpc_test.h'), 'r')
+			content = fp.read()
+			fp.close()
+		except Exception,e:
+			print traceback.format_exc()
+			sys.exit()
+
+		api_content = ''
+		arg_content = ''
+		for api in self.jsondata['rpc_server']['apis']:
+			api_content += '\t\t\tvirtual int %s( OptMap & bigmap );\n' % (api['name'])
+			arg_content += '\t\t\t\t\t{ \"%s\", &TestTool::%s, \"c:f:h\" },' % (api['name'], api['name'])
+
+		content = content.replace('${app}', self.jsondata['app'])
+		content = content.replace('${api}', api_content)
+		content = content.replace('${arg}', arg_content)
 
 		try:
-			fp = open(os.path.join(rpc_test_dir, self.jsondata['app'] + '_rpc_test.py'), 'w')
+			fp = open(os.path.join(rpc_test_dir, self.jsondata['app'] + '_rpc_test.h'), 'w')
+			fp.write(content)
+			fp.close()
+		except Exception,e:
+			print traceback.format_exc()
+			sys.exit()
+
+	def	gen_rpc_test_cpp_file(self, rpc_test_dir):
+		try:
+			fp = open(os.path.join(self.tplpath, 'rpc_test.cpp'), 'r')
+			content = fp.read()
+			fp.close()
+		except Exception,e:
+			print traceback.format_exc()
+			sys.exit()
+
+		api_content = ''
+		func_content = ''
+		for api in self.jsondata['rpc_server']['apis']:
+			api_content += '\tint TestTool :: %s( OptMap & ) {\n\t\treturn -1;\n\t}\n\n' % (api['name'])
+			func_content += '\tint TestToolImpl :: %s( OptMap & opt_map ) {\n' % (api['name'])
+			if 'req_proto' in api:
+				func_content += '\t\t%s req;\n' % (api['req_proto'])
+			if 'res_proto' in api:
+				func_content += '\t\t%s res;\n' % (api['res_proto'])
+			func_content += '\n\t\tClient cli;\n'
+			func_content += '\t\tint ret = cli.%s( ' % (api['name'])
+			if 'req_proto' in api:
+				func_content += 'req'
+			if 'res_proto' in api:
+				if 'req_proto' in api:
+					func_content += ', '
+				func_content += 'res'
+			func_content += ' );\n'
+			func_content += 'printf( \"%%s return %%d\\n\", __func__, ret );\n\n'
+			func_content += '\t\treturn 0;\n\t}\n\n'
+
+		content = content.replace('${app}', self.jsondata['app'])
+		content = content.replace('${api}', api_content)
+		content = content.replace('${func}', func_content)
+
+		try:
+			fp = open(os.path.join(rpc_test_dir, self.jsondata['app'] + '_rpc_test.cpp'), 'w')
 			fp.write(content)
 			fp.close()
 		except Exception,e:
