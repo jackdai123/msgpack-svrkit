@@ -211,25 +211,14 @@ class GenPythonCode:
 	def gen_rpc_cli_code(self):
 		content = ''
 		for api in self.jsondata['rpc_server']['apis']:
-			for arg in api['args']:
-				content += '\t#@param %s : %s\n' % (arg['name'], arg['type'])
 			if 'req_proto' in api:
 				content += '\t#@req : %s\n' % (api['req_proto'])
 			if 'res_proto' in api:
 				content += '\t#@res : %s\n' % (api['res_proto'])
 			content += '\tdef %s(self' % (api['name'])
-			for arg in api['args']:
-				content += ', %s' % (arg['name'])
-			content += '):\n\t\tfor i in xrange(3):\n\t\t\ttry:\n'
 			if 'req_proto' in api:
-				for proto in self.jsondata['protos']:
-					if proto['name'] == api['req_proto']:
-						content += '\t\t\t\treq = self.rpc_proto.%s()\n' % (api['req_proto'])
-						for field in proto['fields']:
-							content += '\t\t\t\treq.%s = %s\n' % (field['name'], get_init_value(field['type']))
-						break
-				else:
-					content += '\t\t\t\treq = %s\n' % (get_init_value(api['req_proto']))
+				content += ', req'
+			content += '):\n\t\tfor i in xrange(3):\n\t\t\ttry:\n'
 			content += '\t\t\t\tfuture = self.client.call_async(\'%s\'' % (api['name'])
 			if 'req_proto' in api:
 				content += ', req'
@@ -394,9 +383,11 @@ class GenPythonCode:
 
 		for api in self.jsondata['rpc_server']['apis']:
 			content += '\tdef test_%s(self):\n' % (api['name'])
+			if 'req_proto' in api:
+				content += '\t\treq = self.rpc_proto.%s()\n' % (api['req_proto'])
 			content += '\t\tret = self.cli.%s(' % (api['name'])
-			for arg in api['args']:
-				content += get_init_value(arg['type']) + ','
+			if 'req_proto' in api:
+				content += 'req'
 			content += ')\n\t\tprint \'%s ret %%s\' %% (ret)\n\n' % (api['name'])
 
 		content += 'if __name__ == \'__main__\':\n\tRPCTest().run()\n\n'

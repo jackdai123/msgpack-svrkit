@@ -467,7 +467,7 @@ class GenCppCode:
 				func_content += 'res'
 			func_content += ' );\n'
 			func_content += '\t\tprintf( \"%s return %d\\n\", __func__, ret );\n\n'
-			func_content += '\t\treturn 0;\n\t}\n'
+			func_content += '\t\treturn 0;\n\t}\n\n'
 
 		content = content.replace('${app}', self.jsondata['app'])
 		content = content.replace('${api}', api_content)
