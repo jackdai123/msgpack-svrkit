@@ -29,7 +29,7 @@ namespace ${app} {
 		succ &= config.ReadItem("app", "name", this->app_name_, sizeof(this->app_name_));
 		succ &= config.ReadItem("app", "pid", this->pid_file_, sizeof(this->pid_file_));
 		if (!succ) {
-			log(LOG_ERR, "ServerConfig::%s app name | pid not found", __func__);
+			printf("ServerConfig::%s app name | pid not found", __func__);
 			return succ;
 		}
 
@@ -38,7 +38,7 @@ namespace ${app} {
 		succ &= config.ReadItem("rpc_server", "port", &(this->port_));
 		succ &= config.ReadItem("rpc_server", "worker_sum", &(this->worker_sum_));
 		if (!succ) {
-			log(LOG_ERR, "ServerConfig::%s rpc_server ip | port | worker_sum not found", __func__);
+			printf("ServerConfig::%s rpc_server ip | port | worker_sum not found", __func__);
 		}
 
 		return succ;
@@ -70,7 +70,7 @@ static void write_pid_file(const char * pid_file) {
 	ss << getpid();
 	ss >> pid_str;
 	if ( ! FileUtils::WriteFile( pid_file, pid_str ) ) {
-		log(LOG_ERR, "%s failed to write pidfile %s", __func__, pid_file);
+		printf("%s failed to write pidfile %s", __func__, pid_file);
 		exit( 0 );
 	}
 }
@@ -121,12 +121,12 @@ int main( int argc, char * argv[] ) {
 		showUsage( argv[0] );
 	}
 
-	if (daemon_flag) {
-		daemon();
-	}
-
 	if (config.GetPidFile() != "") {
 		write_pid_file( config.GetPidFile().c_str() );
+	}
+
+	if (daemon_flag) {
+		daemon();
 	}
 
 	msgpack::rpc::server svr;
