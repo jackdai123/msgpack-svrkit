@@ -258,27 +258,33 @@ class GenCppCode:
 				if 'req_proto' in api:
 					content += ', '
 				content += '%s & res' % (api['res_proto'])
-			content += ') {\n\t\ttry {\n\t\t\tmsgpack::rpc::future callback = this->master_cli_->call(\"%s\"' % (api['name'])
+			content += ') {\n\t\ttry {\n'
+			if 'res_proto' in api:
+				content += '\t\t\tmsgpack::rpc::future callback = this->master_cli_->call(\"%s\"' % (api['name'])
+			else:
+				content += '\t\t\tthis->master_cli_->notify(\"%s\"' % (api['name'])
 			if 'req_proto' in api:
 				content += ', req'
-			content += ');\n\t\t\t'
+			content += ');\n'
 			if 'res_proto' in api:
-				content += 'res = '
-			content += 'callback.get< '
-			if 'res_proto' in api:
-				content += '%s' % (api['res_proto'])
-			content += ' >();\n\t\t} catch (std::exception & e) {\n'
+				content += '\t\t\tres = callback.get< %s >();\n' % (api['res_proto'])
+			else:
+				content += '\t\t\tthis->master_cli_->get_loop()->flush();\n'
+			content += '\t\t} catch (std::exception & e) {\n'
 			content += '\t\t\tlog(LOG_ERR, \"Client::%s master[%s:%d] %s\", __func__, this->svr_->master.ip, this->svr_->master.port, e.what());\n'
-			content += '\t\t\ttry {\n\t\t\t\tmsgpack::rpc::future callback = this->slave_cli_->call(\"%s\"' % (api['name'])
+			content += '\t\t\ttry {\n'
+			if 'res_proto' in api:
+				content += '\t\t\t\tmsgpack::rpc::future callback = this->slave_cli_->call(\"%s\"' % (api['name'])
+			else:
+				content += '\t\t\t\tthis->slave_cli_->notify(\"%s\"' % (api['name'])
 			if 'req_proto' in api:
 				content += ', req'
-			content += ');\n\t\t\t\t'
+			content += ');\n'
 			if 'res_proto' in api:
-				content += 'res = '
-			content += 'callback.get< '
-			if 'res_proto' in api:
-				content += '%s' % (api['res_proto'])
-			content += ' >();\n\t\t\t} catch (std::exception & e) {\n'
+				content += '\t\t\t\tres = callback.get< %s >();\n' % (api['res_proto'])
+			else:
+				content += '\t\t\t\tthis->slave_cli_->get_loop()->flush();\n'
+			content += '\t\t\t} catch (std::exception & e) {\n'
 			content += '\t\t\t\tlog(LOG_ERR, \"Client::%s slave[%s:%d] %s\", __func__, this->svr_->slave.ip, this->svr_->slave.port, e.what());\n'
 			content += '\t\t\t\treturn -1;\n\t\t\t}\n\t\t}\n\n\t\treturn 0;\n\t}\n\n'
 		return content
@@ -425,7 +431,7 @@ class GenCppCode:
 		arg_content = ''
 		for api in self.jsondata['rpc_server']['apis']:
 			api_content += '\t\t\tvirtual int %s( OptMap & bigmap );\n' % (api['name'])
-			arg_content += '\t\t\t\t\t{ \"%s\", &TestTool::%s, \"c:f:h\" },\n' % (api['name'], api['name'])
+			arg_content += '\t\t\t\t\t{ \"%s\", &TestTool::%s, \"c:f:h\", \"\" },\n' % (api['name'], api['name'])
 
 		content = content.replace('${app}', self.jsondata['app'])
 		content = content.replace('${api}', api_content)

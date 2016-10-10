@@ -39,7 +39,7 @@ void showUsage( const char * program )
 
 		if( NULL == iter->name ) break;
 
-		printf( "          %s -c rpc_cli.conf -f %s %s\n", program, iter->name, iter->usage );
+		printf( "          %s -c ${app}_rpc_cli.conf -f %s %s\n", program, iter->name, iter->usage );
 	}
 
 	exit( 0 );

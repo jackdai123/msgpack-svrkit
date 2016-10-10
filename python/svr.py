@@ -29,14 +29,14 @@ class Service:
 
 	def parse_opts(self, argv):
 		try:
-			opts, args = getopt.getopt(argv[1:], "df:h")
+			opts, args = getopt.getopt(argv[1:], "dc:h")
 		except getopt.GetoptError:
 			self.print_usage(argv)
 			sys.exit()
 		for op, value in opts:
 			if op == '-d':
 				self.daemon = True
-			elif op == '-f':
+			elif op == '-c':
 				self.conffile = value
 			else:
 				self.print_usage(argv)
@@ -64,11 +64,13 @@ class Service:
 
 	def print_usage(self, argv):
 		print 'Usage:'
-		print '\t%s -f /path/to/svr.conf -d' % (argv[0])
+		print '\tpython %s [-c <config>] [-d] [-h]' % (argv[0])
 		print 'Options:'
-		print '\t-f\tserver configure file'
+		print '\t-c\tconfigure file of server'
 		print '\t-d\trun as daemon'
 		print '\t-h\tshow help'
+		print 'Examples:'
+		print '\tpython %s -c svr.conf -d' % (argv[0])
 
 	def start(self):
 		signal.signal(signal.SIGPIPE, signal.SIG_IGN)

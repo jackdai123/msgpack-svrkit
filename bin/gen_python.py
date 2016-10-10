@@ -219,11 +219,15 @@ class GenPythonCode:
 			if 'req_proto' in api:
 				content += ', req'
 			content += '):\n\t\tfor i in xrange(3):\n\t\t\ttry:\n'
-			content += '\t\t\t\tfuture = self.client.call_async(\'%s\'' % (api['name'])
+			if 'res_proto' in api:
+				content += '\t\t\t\tfuture = self.client.call_async(\'%s\'' % (api['name'])
+			else:
+				content += '\t\t\t\tself.client.notify(\'%s\'' % (api['name'])
 			if 'req_proto' in api:
 				content += ', req'
-			content += ')\n\t\t\t\tresult = future.get()\n'
+			content += ')\n'
 			if 'res_proto' in api:
+				content += '\t\t\t\tresult = future.get()\n'
 				for proto in self.jsondata['protos']:
 					if proto['name'] == api['res_proto']:
 						content += '\t\t\t\tres = self.rpc_proto.%s()\n' % (api['res_proto'])
@@ -232,7 +236,7 @@ class GenPythonCode:
 				else:
 					content += '\t\t\t\treturn result\n'
 			else:
-				content += '\t\t\t\treturn result\n'
+				content += '\t\t\t\treturn None\n'
 			content += '\t\t\texcept Exception, e:\n\t\t\t\tif not self._failover():\n\t\t\t\t\tbreak\n\n'
 		return content
 
@@ -290,7 +294,7 @@ class GenPythonCode:
 						content += '\t\tres = %s\n' % (get_init_value(api['res_proto']))
 					content += '\t\treturn res\n\n'
 				else:
-					content += '\t\treturn None\n\n'
+					content += '\t\tpass\n\n'
 			fp = open(os.path.join(rpc_handler_dir, '%s_rpc_handler.py' % (self.jsondata['app'])), 'w')
 			fp.write(content)
 			fp.close()
@@ -371,6 +375,7 @@ class GenPythonCode:
 		try:
 			fp = open(os.path.join(self.tplpath, 'rpc_test_app.py'), 'r')
 			content += fp.read()
+			content = content.replace('${app}', self.jsondata['app'])
 			fp.close()
 		except Exception,e:
 			print traceback.format_exc()

@@ -83,7 +83,7 @@ static void showUsage( const char * program ) {
 	printf( "          -d\trun as daemon\n" );
 	printf( "          -h\tshow help\n" );
 	printf( "Examples:\n" );
-	printf( "          %s -c svr.conf -d\n", program );
+	printf( "          %s -c ${app}_svr.conf -d\n", program );
 	exit( 0 );
 }
 
