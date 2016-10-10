@@ -194,13 +194,13 @@ def test_echo(self):
 	for i in xrange(1000000):
 		self.cli.echo1(req)
 ```
-- **有返回结果的测试**：IDL描述文件中rpc_server.apis不设置res_proto，qps为3000/s
+- **有返回结果的测试**：IDL描述文件中rpc_server.apis设置res_proto，qps为3000/s
 ```
 real    5m36.347s
 user    2m27.468s
 sys     0m15.990s
 ```
-- **无返回结果的测试**：IDL描述文件中rpc_server.apis设置res_proto，qps为1.4w/s
+- **无返回结果的测试**：IDL描述文件中rpc_server.apis不设置res_proto，qps为1.4w/s
 ```
 real    1m12.819s
 user    0m42.881s

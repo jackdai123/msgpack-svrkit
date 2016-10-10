@@ -12,7 +12,7 @@ MSGPACKRPC_LIB_PATH = /usr/local/lib
 MPIO_LIB_PATH = /usr/local/lib
 
 ##### cflags and ldflags #####
-CFLAGS = -std=c++03 -DMSGPACK_USE_CPP03 -Wall -D_REENTRANT -D_GNU_SOURCE -fPIC -g2 -I$(MSGPACK_INC_PATH) -I$(MSGPACKRPC_INC_PATH)
+CFLAGS = -std=c++03 -DMSGPACK_USE_CPP03 -Wall -D_REENTRANT -D_GNU_SOURCE -fPIC -O2 -I$(MSGPACK_INC_PATH) -I$(MSGPACKRPC_INC_PATH)
 STATICFLAGS = -Wl,-static
 STATICLIBS = -L$(MSGPACKRPC_LIB_PATH) -ljubatus_msgpack-rpc -L$(MSGPACK_LIB_PATH) -lmsgpack -L$(MPIO_LIB_PATH) -ljubatus_mpio
 DYNAMICFLAGS = -Wl,-call_shared
