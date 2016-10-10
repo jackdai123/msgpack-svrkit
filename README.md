@@ -60,8 +60,8 @@ msgpack-svrkit由客户端来决定路由，即请求发送到哪台服务器，
 > * worker_sum：定义rpc工作者的数量
 > * apis：定义服务提供的接口
 > * apis.name：定义接口的名称
-> * apis.req_proto: 定义接口请求的数据类型，[见rpc协议](#rpc_proto)
-> * apis.res_proto: 定义接口响应的数据类型，[见rpc协议](#rpc_proto)
+> * apis.req_proto: 定义接口请求的数据类型，见[rpc协议](#rpc_proto)
+> * apis.res_proto: 定义接口响应的数据类型，见[rpc协议](#rpc_proto)
 
 如下json片段定义一个多线程、有4个rpc接口的echo服务
 
