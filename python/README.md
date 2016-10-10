@@ -124,7 +124,7 @@ worker_sum=2
 group_name=value
 worker_sum=2
 ```
-- export PYTHONPATH=$(dirname `pwd`)
+- export PYTHONPATH=$(dirname \`pwd\`)
 - python echo_svr.py
 ```bash
 Usage:
