@@ -165,7 +165,7 @@ msgpack-svrkit由客户端来决定路由，即请求发送到哪台服务器，
 ```
 
 # msgpack-svrkit使用
-msgpack-svrkit提供gen_svr.py工具，在主目录的bin下面，按照帮助输入IDL文件、要生成服务的语言即可，下面以echo服务为例说明
+msgpack-svrkit提供gen_svr.py工具，在主目录的bin下面，输入IDL文件和要生成服务的语言即可，下面以echo服务为例说明
 
 - cd ~ && git clone https://github.com/jackdai123/msgpack-svrkit.git
 - ~/msgpack-svrkit/bin/gen_svr.py
