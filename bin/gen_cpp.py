@@ -410,6 +410,8 @@ class GenCppCode:
 			fp = open(os.path.join(self.codepath, self.jsondata['app'] + '_rpc_proto.h'), 'w')
 			fp.write(content)
 			fp.close()
+			fp = open(os.path.join(self.codepath, self.jsondata['app'] + '_rpc_proto.cpp'), 'w')
+			fp.close()
 		except Exception,e:
 			print traceback.format_exc()
 			sys.exit()

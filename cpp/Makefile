@@ -19,17 +19,17 @@ DYNAMICFLAGS = -Wl,-call_shared
 DYNAMICLIBS = -lstdc++ -lpthread -lm
 
 ##### make rules #####
-%.o: %.c
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< -o $@
-%.o: %.cc
+%.o: %.cc %.h
 	$(CC) $(CFLAGS) -c $< -o $@
-%.o: %.cpp
+%.o: %.cpp %.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 ##### objs for compiling #####
 COM_OBJS = log_utils.o file_utils.o config.o opt_map.o
-CLI_OBJS = $(COM_OBJS) ${app}_rpc_cli.o
-SVR_OBJS = $(COM_OBJS) ${app}_rpc_handler.o daemon.o ${app}_svr.o
+CLI_OBJS = $(COM_OBJS) ${app}_rpc_proto.o ${app}_rpc_cli.o
+SVR_OBJS = $(COM_OBJS) daemon.o ${app}_rpc_proto.o ${app}_rpc_handler.o ${app}_svr.o
 
 ##### target for compiling #####
 TARGETS = lib${app}_rpc_cli.a ${app}_rpc_test ${app}_svr
@@ -40,7 +40,7 @@ all: $(TARGETS)
 lib${app}_rpc_cli.a: $(CLI_OBJS)
 	$(AR) $@ $^
 
-${app}_rpc_test: ${app}_rpc_test.o lib${app}_rpc_cli.a
+${app}_rpc_test: lib${app}_rpc_cli.a ${app}_rpc_test.o
 	$(LINKER) $^ $(STATICFLAGS) -L. -l${app}_rpc_cli $(STATICLIBS) $(DYNAMICFLAGS) $(DYNAMICLIBS) -o $@
 
 ${app}_svr: $(SVR_OBJS)
