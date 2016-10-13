@@ -6,6 +6,7 @@ import importlib
 
 class handler:
 	def __init__(self, args):
+		self.args = args
 		self.rpc_proto = None
 		self._get_rpc_proto()
 
