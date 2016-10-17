@@ -16,8 +16,6 @@ def get_init_value(data_type):
 		return '0'
 	if data_type == 'list':
 		return '[]'
-	if data_type == 'tuple':
-		return '()'
 	if data_type == 'dict':
 		return '{}'
 	return 'None'
@@ -344,7 +342,50 @@ class GenPythonCode:
 				content += '\t\t]\n\n\tdef from_msgpack(self, msg):\n'
 				index = 0
 				for field in proto['fields']:
-					content += '\t\tself.%s = msg[%d]\n' % (field['name'], index)
+					if 'subtype' not in field:
+						content += '\t\tself.%s = msg[%d]\n' % (field['name'], index)
+					elif field['type'] == 'list':
+						if field['subtype'] in ['string', 'bool', 'int', 'float']:
+							content += '\t\tself.%s = msg[%d]\n' % (field['name'], index)
+						else:
+							for proto2 in self.jsondata['protos']:
+								if proto2['name'] == field['subtype']:
+									break
+							else:
+								raise TypeError('proto:%s field:%s subtype isnot correct!' % (proto['name'], field['name']))
+							content += '\t\tfor list_element in msg[%d]:\n' % (index)
+							content += '\t\t\tm = %s()\n' % (field['subtype'])
+							content += '\t\t\tm.from_msgpack(list_element)\n'
+							content += '\t\t\tself.%s.append(m)\n' % (field['name'])
+					elif field['type'] == 'dict':
+						subtype_list = field['subtype'].split(':')
+						if len(subtype_list) == 2:
+							content += '\t\tfor dict_key,dict_value in msg[%d].iteritems():\n' % (index)
+							if subtype_list[0] in ['string', 'bool', 'int', 'float']:
+								content += '\t\t\tk = dict_key\n'
+							else:
+								for proto2 in self.jsondata['protos']:
+									if proto2['name'] == subtype_list[0]:
+										break
+								else:
+									raise TypeError('proto:%s field:%s subtype isnot correct!' % (proto['name'], field['name']))
+								content += '\t\t\tk = %s()\n' % (subtype_list[0])
+								content += '\t\t\tk.from_msgpack(dict_key)'
+							if subtype_list[1] in ['string', 'bool', 'int', 'float']:
+								content += '\t\t\tv = dict_value\n'
+							else:
+								for proto2 in self.jsondata['protos']:
+									if proto2['name'] == subtype_list[1]:
+										break
+								else:
+									raise TypeError('proto:%s field:%s subtype isnot correct!' % (proto['name'], field['name']))
+								content += '\t\t\tv = %s()\n' % (subtype_list[1])
+								content += '\t\t\tv.from_msgpack(dict_value)\n'
+							content += '\t\t\tself.%s[k] = v\n' % (field['name'])
+						else:
+							raise TypeError('proto:%s field:%s subtype isnot correct!' % (proto['name'], field['name']))
+					else:
+						raise TypeError('proto:%s field:%s type isnot correct!' % (proto['name'], field['name']))
 					index += 1
 				content += '\n'
 

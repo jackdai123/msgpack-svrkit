@@ -7,17 +7,6 @@ import stat
 import shutil
 import traceback
 
-def get_type_name(data_type):
-	if data_type in ['bool','int','float']:
-		return data_type
-	if data_type == 'string':
-		return 'std::string'
-	if data_type == 'list':
-		return 'std::vector'
-	if data_type == 'dict':
-		return 'std::map'
-	return ''
-
 def replace_content(src_file, dest_file, tag, tag_content):
 	content = ''
 	try:
@@ -69,8 +58,12 @@ class GenCppCode:
 					raise TypeError('proto:%s field:%s type is not [\'int\',\'float\',\'bool\',\'string\',\'list\',\'dict\']' % (proto['name'], field['name']))
 				if 'subtype' in field:
 					for subtype in field['subtype'].split(':'):
-						if subtype not in ['int','float','bool','string']:
-							raise TypeError('proto:%s field:%s subtype is not [\'int\',\'float\',\'bool\',\'string\']' % (proto['name'], field['name']))
+						for proto2 in self.jsondata['protos']:
+							if proto2['name'] == subtype:
+								break
+						else:
+							if subtype not in ['int','float','bool','string']:
+								raise TypeError('proto:%s field:%s subtype is not [\'int\',\'float\',\'bool\',\'string\']' % (proto['name'], field['name']))
 
 		for api in self.jsondata['rpc_server']['apis']:
 			if 'req_proto' in api and not self.check_proto(api['req_proto']):
@@ -366,6 +359,20 @@ class GenCppCode:
 			content += '\t}\n\n'
 		return content
 
+	def get_type_name(self, data_type):
+		if data_type in ['bool','int','float']:
+			return data_type
+		if data_type == 'string':
+			return 'std::string'
+		if data_type == 'list':
+			return 'std::vector'
+		if data_type == 'dict':
+			return 'std::map'
+		for proto in self.jsondata['protos']:
+			if proto['name'] == data_type:
+				return data_type
+		return ''
+
 	def gen_rpc_proto(self):
 		if 'protos' not in self.jsondata:
 			return
@@ -393,11 +400,11 @@ class GenCppCode:
 			content += '\tclass %s {\n\t\tpublic:\n' % (proto['name'])
 			for field in proto['fields']:
 				if field['type'] in ['bool','int','float','string']:
-					content += '\t\t\t%s %s;\n' % (get_type_name(field['type']), field['name'])
+					content += '\t\t\t%s %s;\n' % (self.get_type_name(field['type']), field['name'])
 				elif field['type'] == 'list':
-					content += '\t\t\t%s<%s> %s;\n' % (get_type_name(field['type']), get_type_name(field['subtype']), field['name'])
+					content += '\t\t\t%s<%s> %s;\n' % (self.get_type_name(field['type']), self.get_type_name(field['subtype']), field['name'])
 				elif field['type'] == 'dict':
-					content += '\t\t\t%s<%s,%s> %s;\n' % (get_type_name(field['type']), get_type_name(field['subtype'].split(':')[0]), get_type_name(field['subtype'].split(':')[1]), field['name'])
+					content += '\t\t\t%s<%s,%s> %s;\n' % (self.get_type_name(field['type']), self.get_type_name(field['subtype'].split(':')[0]), self.get_type_name(field['subtype'].split(':')[1]), field['name'])
 			content += '\n\t\tpublic:\n\t\t\tMSGPACK_DEFINE('
 			for i in xrange(len(proto['fields'])):
 				if i != 0:
