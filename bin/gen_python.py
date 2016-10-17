@@ -7,19 +7,6 @@ import stat
 import shutil
 import traceback
 
-def get_init_value(data_type):
-	if data_type == 'string':
-		return '\'\''
-	if data_type == 'bool':
-		return 'False';
-	if data_type in ['int', 'float']:
-		return '0'
-	if data_type == 'list':
-		return '[]'
-	if data_type == 'dict':
-		return '{}'
-	return 'None'
-
 class GenPythonCode:
 	def __init__(self, json, tpl, code):
 		self.jsondata = json
@@ -51,6 +38,22 @@ class GenPythonCode:
 			raise IOError('%s is not exists' % (self.tplpath))
 		if not os.path.exists(self.codepath):
 			os.mkdir(self.codepath)
+
+	def get_init_value(self, data_type):
+		if data_type == 'string':
+			return '\'\''
+		if data_type == 'bool':
+			return 'False';
+		if data_type in ['int', 'float']:
+			return '0'
+		if data_type == 'list':
+			return '[]'
+		if data_type == 'dict':
+			return '{}'
+		for proto in self.jsondata['protos']:
+			if proto['name'] == data_type:
+				return data_type + '()'
+		return 'None'
 
 	def gen_init_file(self):
 		try:
@@ -289,7 +292,7 @@ class GenPythonCode:
 							content += '\t\tres = self.rpc_proto.%s()\n' % (api['res_proto'])
 							break
 					else:
-						content += '\t\tres = %s\n' % (get_init_value(api['res_proto']))
+						content += '\t\tres = %s\n' % (self.get_init_value(api['res_proto']))
 					content += '\t\treturn res\n\n'
 				else:
 					content += '\t\tpass\n\n'
@@ -335,7 +338,7 @@ class GenPythonCode:
 			for proto in self.jsondata['protos']:
 				content += 'class %s(object):\n\tdef __init__(self):\n' % (proto['name'])
 				for field in proto['fields']:
-					content += '\t\tself.%s = %s\n' % (field['name'], get_init_value(field['type']))
+					content += '\t\tself.%s = %s\n' % (field['name'], self.get_init_value(field['type']))
 				content += '\n\tdef to_msgpack(self):\n\t\treturn [\n'
 				for field in proto['fields']:
 					content += '\t\t\tself.%s,\n' % (field['name'])
@@ -343,7 +346,12 @@ class GenPythonCode:
 				index = 0
 				for field in proto['fields']:
 					if 'subtype' not in field:
-						content += '\t\tself.%s = msg[%d]\n' % (field['name'], index)
+						for proto2 in self.jsondata['protos']:
+							if proto2['name'] == field['type']:
+								content += '\t\tself.%s.from_msgpack(msg[%d])\n' % (field['name'], index)
+								break
+						else:
+							content += '\t\tself.%s = msg[%d]\n' % (field['name'], index)
 					elif field['type'] == 'list':
 						if field['subtype'] in ['string', 'bool', 'int', 'float']:
 							content += '\t\tself.%s = msg[%d]\n' % (field['name'], index)

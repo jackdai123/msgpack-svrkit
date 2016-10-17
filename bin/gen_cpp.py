@@ -54,8 +54,12 @@ class GenCppCode:
 
 		for proto in self.jsondata['protos']:
 			for field in proto['fields']:
-				if field['type'] not in ['int','float','bool','string','list','dict']:
-					raise TypeError('proto:%s field:%s type is not [\'int\',\'float\',\'bool\',\'string\',\'list\',\'dict\']' % (proto['name'], field['name']))
+				for proto2 in self.jsondata['protos']:
+					if proto2['name'] == field['type']:
+						break
+				else:
+					if field['type'] not in ['int','float','bool','string','list','dict']:
+						raise TypeError('proto:%s field:%s type is not correct' % (proto['name'], field['name']))
 				if 'subtype' in field:
 					for subtype in field['subtype'].split(':'):
 						for proto2 in self.jsondata['protos']:
@@ -63,7 +67,7 @@ class GenCppCode:
 								break
 						else:
 							if subtype not in ['int','float','bool','string']:
-								raise TypeError('proto:%s field:%s subtype is not [\'int\',\'float\',\'bool\',\'string\']' % (proto['name'], field['name']))
+								raise TypeError('proto:%s field:%s subtype is not correct' % (proto['name'], field['name']))
 
 		for api in self.jsondata['rpc_server']['apis']:
 			if 'req_proto' in api and not self.check_proto(api['req_proto']):
@@ -405,6 +409,11 @@ class GenCppCode:
 					content += '\t\t\t%s<%s> %s;\n' % (self.get_type_name(field['type']), self.get_type_name(field['subtype']), field['name'])
 				elif field['type'] == 'dict':
 					content += '\t\t\t%s<%s,%s> %s;\n' % (self.get_type_name(field['type']), self.get_type_name(field['subtype'].split(':')[0]), self.get_type_name(field['subtype'].split(':')[1]), field['name'])
+				else:
+					for proto2 in self.jsondata['protos']:
+						if proto2['name'] == field['type']:
+							content += '\t\t\t%s %s;\n' % (field['type'], field['name'])
+							break
 			content += '\n\t\tpublic:\n\t\t\tMSGPACK_DEFINE('
 			for i in xrange(len(proto['fields'])):
 				if i != 0:
