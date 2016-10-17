@@ -1,0 +1,71 @@
+{
+	"app": "logagent",
+
+	"protos": [{
+		"name": "debugmsg",
+		"fields": [{
+			"name": "value",
+			"type": "string"
+		}]
+	},{
+		"name": "opmsg",
+		"fields": [{
+			"name": "time",
+			"type": "int"
+		},{
+			"name": "user",
+			"type": "string"
+		},{
+			"name": "action",
+			"type": "string"
+		},{
+			"name": "args",
+			"type": "string"
+		},{
+			"name": "others",
+			"type": "string"
+		}]
+	},{
+		"name": "opqueryreq",
+		"fields": [{
+			"name": "user",
+			"type": "string"
+		},{
+			"name": "begintime",
+			"type": "int"
+		},{
+			"name": "endtime",
+			"type": "int"
+		}]
+	},{
+		"name": "opqueryres",
+		"fields": [{
+			"name": "debuglogs",
+			"type": "debugmsg"
+		},{
+			"name": "oplogs",
+			"type": "list",
+			"subtype": "opmsg"
+		},{
+			"name": "kvs",
+			"type": "dict",
+			"subtype": "int:opmsg"
+		}]
+	}],
+
+	"rpc_client": {
+		"mode": "sharding"
+	},
+
+	"rpc_server": {
+		"ip": "0.0.0.0",
+		"port": 4000,
+		"worker_type": "thread",
+		"worker_sum": 4,
+		"apis": [{
+			"name": "opquery",
+			"req_proto": "opqueryreq",
+			"res_proto": "opqueryres"
+		}]
+	}
+}

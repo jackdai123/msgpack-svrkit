@@ -14,10 +14,11 @@ IDL描述文件是一个json文件，主要包括rpc协议、客户端分布、r
 > * name：定义数据结构的名称
 > * fields：定义数据结构包含的字段
 > * fields.name：定义一个字段的名称
-> * fields.type：定义一个字段的数据类型，支持类型有string、bool、int、float、list、dict
-> * fields.subtype：定义一个字段数据类型的子类型，支持子类型有string、bool、int、float
+> * fields.type：定义一个字段的数据类型，支持类型有string、bool、int、float、list、dict、自定义数据结构
+> * fields.subtype：定义一个字段数据类型的子类型，支持子类型有string、bool、int、float、自定义数据结构
 
 如下json片段定义了包含3个字段、名叫echomsg的数据结构，其中vec_string是个字符串数组、dict_float是key为整形、value为浮点型的字典
+另外一个数据结构response支持数据结构嵌套，内部嵌套了之前定义的echomsg
 
 ```json
 "protos": [{
@@ -34,6 +35,21 @@ IDL描述文件是一个json文件，主要包括rpc协议、客户端分布、r
 		"type": "dict",
 		"subtype": "int:float"
 	}]
+},{
+	"name": "response",
+	"fields": [{
+		"name": "echo",
+		"type": "echomsg"
+	},{
+		"name": "vec_echo",
+		"type": "list",
+		"subtype": "echomsg"
+	},{
+		"name": "dict_echo",
+		"type": "dict",
+		"subtype": "int:echomsg"
+	}]
+
 }]
 ```
 
