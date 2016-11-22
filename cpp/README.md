@@ -245,7 +245,7 @@ sys     0m0.481s
 
 # 依赖库
 - gcc >= 4.1 with C++ support
-- [msgpack](https://github.com/msgpack/msgpack-c.git)
-- [jubatus_mpio](https://github.com/jubatus/jubatus-mpio)
-- [jubatus_msgpack-rpc](https://github.com/jubatus/jubatus-msgpack-rpc)
+- [msgpack](https://github.com/msgpack/msgpack-c/tree/cpp-1.0.0)：用cpp版本，否则不会生成libmsgpack.a
+- [jubatus_mpio](https://github.com/jubatus/jubatus-mpio)：用master版本即可
+- [jubatus_msgpack-rpc](https://github.com/jubatus/jubatus-msgpack-rpc/tree/msgpack-1.x/cpp)：用msgpack-1.x版本
 
