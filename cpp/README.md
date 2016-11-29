@@ -245,7 +245,15 @@ sys     0m0.481s
 
 # 依赖库
 - gcc >= 4.1 with C++ support
-- [msgpack](https://github.com/msgpack/msgpack-c/tree/cpp-1.0.0)：用cpp版本，否则不会生成libmsgpack.a
-- [jubatus_mpio](https://github.com/jubatus/jubatus-mpio)：用master版本即可
-- [jubatus_msgpack-rpc](https://github.com/jubatus/jubatus-msgpack-rpc/tree/msgpack-1.x/cpp)：用msgpack-1.x版本
-
+- [msgpack](https://github.com/msgpack/msgpack-c/tree/cpp-1.0.0)
+必须用cpp版本，否则只会生成libmsgpackc而不会生成libmsgpack
+C++11版本的msgpack库需使用编译命令cmake -DMSGPACK_CXX11=ON .
+- [jubatus_mpio](https://github.com/jubatus/jubatus-mpio)
+用master版本即可
+- [jubatus_msgpack-rpc](https://github.com/jubatus/jubatus-msgpack-rpc/tree/msgpack-1.x/cpp)
+用msgpack-1.x版本安装
+在依赖此库时，编译需增加选项-std=c++03 -DMSGPACK_USE_CPP03，具体参考msgpack-svrkit生成代码的Makefile
+- [msgpack-rpc-boost](https://github.com/davidchappelle/msgpack-rpc-boost)
+当需要使用boost库替换epoll时，用此库替换掉上面的jubatus_msgpack-rpc
+建议编译成so，需修改库根目录文件CMakeCache.txt中shared为ON
+编译完成后执行sudo ldconfig /usr/local/lib，其中/usr/local/lib为库安装目录
