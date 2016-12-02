@@ -11,7 +11,7 @@ else
 	SVRNAME=$MAINPATH/${NAME}_svr.pyc
 fi
 SVRCONF=$MAINPATH/${NAME}_svr.conf
-DAEMON="python $SVRNAME -f $SVRCONF -d"
+DAEMON="python $SVRNAME -c $SVRCONF -d"
 
 do_start()
 {
