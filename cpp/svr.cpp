@@ -121,12 +121,12 @@ int main( int argc, char * argv[] ) {
 		showUsage( argv[0] );
 	}
 
-	if (config.GetPidFile() != "") {
-		write_pid_file( config.GetPidFile().c_str() );
-	}
-
 	if (daemon_flag) {
 		daemon();
+	}
+
+	if (config.GetPidFile() != "") {
+		write_pid_file( config.GetPidFile().c_str() );
 	}
 
 	msgpack::rpc::server svr;
